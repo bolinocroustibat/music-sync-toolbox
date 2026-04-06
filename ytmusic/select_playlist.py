@@ -1,5 +1,6 @@
 from ytmusicapi import YTMusic
 import inquirer
+from inquirer_prompt import prompt
 from ytmusic.list_user_playlists import list_user_playlists
 from ytmusic.logger import logger
 
@@ -71,7 +72,7 @@ def select_playlist(ytm: YTMusic, playlist_id: str | None = None) -> str:
         )
     ]
 
-    answers = inquirer.prompt(questions)
+    answers = prompt(questions)
     if not answers:  # User pressed Ctrl+C
         raise KeyboardInterrupt("Playlist selection cancelled")
 

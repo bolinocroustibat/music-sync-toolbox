@@ -1,5 +1,6 @@
 import spotipy
 import inquirer
+from inquirer_prompt import prompt
 from spotify.list_user_playlists import list_user_playlists
 from spotify.logger import logger
 
@@ -70,7 +71,7 @@ def select_playlist(sp: spotipy.Spotify, playlist_id: str | None = None) -> str:
         )
     ]
 
-    answers = inquirer.prompt(questions)
+    answers = prompt(questions)
     if not answers:  # User pressed Ctrl+C
         raise KeyboardInterrupt("Playlist selection cancelled")
 

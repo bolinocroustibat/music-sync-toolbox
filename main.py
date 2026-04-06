@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import inquirer
+from inquirer_prompt import prompt
 import tomllib
 import discogs_client as dc
 
@@ -36,7 +37,7 @@ def setup_config() -> tuple[DiscogsConfig, SpotifyConfig, YTMusicConfig]:
                 default=str(Path.home() / "Music"),
             ),
         ]
-        answers = inquirer.prompt(questions)
+        answers = prompt(questions)
         if not answers:
             discogs_logger.error("Configuration cancelled by user")
             sys.exit(1)
@@ -49,7 +50,7 @@ def setup_config() -> tuple[DiscogsConfig, SpotifyConfig, YTMusicConfig]:
                 message="Enter your Discogs token",
             ),
         ]
-        answers = inquirer.prompt(questions)
+        answers = prompt(questions)
         if not answers:
             discogs_logger.error("Configuration cancelled by user")
             sys.exit(1)
@@ -71,7 +72,7 @@ def setup_config() -> tuple[DiscogsConfig, SpotifyConfig, YTMusicConfig]:
                 default="http://localhost:8888/callback",
             ),
         ]
-        answers = inquirer.prompt(questions)
+        answers = prompt(questions)
         if not answers:
             discogs_logger.error("Configuration cancelled by user")
             sys.exit(1)
@@ -88,7 +89,7 @@ def setup_config() -> tuple[DiscogsConfig, SpotifyConfig, YTMusicConfig]:
                 message="Enter your YouTube Music client secret",
             ),
         ]
-        answers = inquirer.prompt(questions)
+        answers = prompt(questions)
         if not answers:
             discogs_logger.error("Configuration cancelled by user")
             sys.exit(1)
@@ -116,7 +117,7 @@ def setup_media_path() -> Path:
             default=str(Path.home() / "Music"),
         ),
     ]
-    answers = inquirer.prompt(questions)
+    answers = prompt(questions)
     if not answers:
         discogs_logger.error("Configuration cancelled by user")
         sys.exit(1)
@@ -212,7 +213,7 @@ def main() -> None:
             ],
         ),
     ]
-    answers = inquirer.prompt(questions)
+    answers = prompt(questions)
     if not answers:
         discogs_logger.error("No action selected")
         sys.exit(1)

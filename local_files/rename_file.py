@@ -1,5 +1,6 @@
 import re
 import inquirer
+from inquirer_prompt import prompt
 
 from local_files.logger import logger
 from local_files.music_file import MusicFile
@@ -11,7 +12,7 @@ def sanitize_filename(filename: str) -> str:
     Replaces characters that are not allowed in file names with underscores.
     This ensures the filename is compatible with the file system.
 
-    Invalid characters include: < > : " / \ | ? *
+    Invalid characters include: < > : " / \\ | ? *
     """
     # Replace invalid characters with underscore
     invalid_chars = r'[<>:"/\\|?*]'
@@ -52,11 +53,11 @@ def rename_file(music_file: MusicFile, confirm: bool = True) -> tuple[bool, bool
             questions = [
                 inquirer.Confirm(
                     "confirm",
-                    message=f"Rename '{music_file.path.name}' to '{new_name}'?",
-                    default=True,
+                    message=f"\nRename '{music_file.path.name}' to '{new_name}'?",
+                    default=False,
                 ),
             ]
-            answers = inquirer.prompt(questions)
+            answers = prompt(questions)
             if not answers or not answers["confirm"]:
                 logger.info(f"Skipping rename of: {music_file.path}")
                 return False, True

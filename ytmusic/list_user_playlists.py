@@ -39,6 +39,15 @@ def list_user_playlists(ytm: YTMusic) -> list[YTMusicPlaylistInfo]:
 
         return user_playlists
 
+    except KeyError as e:
+        logger.error(f"Error fetching playlists: Missing key '{e}' in OAuth token")
+        logger.error("This usually means the OAuth token is expired or invalid.")
+        logger.info("Try regenerating your OAuth token by running: uv run ytmusicapi oauth")
+        return []
     except Exception as e:
         logger.error(f"Error fetching playlists: {e}")
+        logger.error(f"Error type: {type(e).__name__}")
+        if "'access_token'" in str(e) or "access_token" in str(e):
+            logger.error("The OAuth token appears to be missing or invalid.")
+            logger.info("Try regenerating your OAuth token by running: uv run ytmusicapi oauth")
         return []
