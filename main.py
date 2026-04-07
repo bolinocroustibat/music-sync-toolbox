@@ -15,6 +15,7 @@ from ytmusic import Config as YTMusicConfig
 from scripts import (
     add_local_tracks_to_spotify,
     add_local_tracks_to_ytmusic,
+    download_from_soulseek,
     import_ytmusic_to_spotify,
     import_spotify_to_ytmusic,
     manage_spotify_duplicates,
@@ -210,6 +211,10 @@ def main() -> None:
                     "🟢  ➡️  🔴  Import tracks from Spotify playlist to YouTube Music Playlist",
                     "ytmusic_import",
                 ),
+                (
+                    "🐝  ⬇️  Search Soulseek and download mp3/flac (via slskd)",
+                    "soulseek_download",
+                ),
             ],
         ),
     ]
@@ -254,6 +259,8 @@ def main() -> None:
         manage_spotify_duplicates()
     elif action == "ytmusic_import":
         import_spotify_to_ytmusic()
+    elif action == "soulseek_download":
+        download_from_soulseek()
 
 
 if __name__ == "__main__":

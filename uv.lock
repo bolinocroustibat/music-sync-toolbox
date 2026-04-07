@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.10, <4.0"
 
 [[package]]
@@ -290,6 +290,7 @@ dependencies = [
     { name = "python-levenshtein" },
     { name = "requests" },
     { name = "rich" },
+    { name = "slskd-api" },
     { name = "spotipy" },
     { name = "ytmusicapi" },
 ]
@@ -303,6 +304,7 @@ requires-dist = [
     { name = "python-levenshtein", specifier = ">=0.23.0" },
     { name = "requests", specifier = ">=2.25.1,<3.0.0" },
     { name = "rich", specifier = ">=13.7.0" },
+    { name = "slskd-api", specifier = ">=0.2.3" },
     { name = "spotipy", specifier = ">=2.23.0" },
     { name = "ytmusicapi", specifier = ">=0.23.0" },
 ]
@@ -495,6 +497,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031, upload-time = "2024-12-04T17:35:28.174Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050, upload-time = "2024-12-04T17:35:26.475Z" },
+]
+
+[[package]]
+name = "slskd-api"
+version = "0.2.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/03/f3/a6ab85bc7c20a47295b5e40ff757f81a0900f8cc88d137975210077f3018/slskd_api-0.2.3.tar.gz", hash = "sha256:700ac8369d44b8a251c722fdc10a3d07642cea1f4bdadd3ab02ccdc71a676225", size = 24217, upload-time = "2026-03-19T14:39:02.055Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/00/85/751df13eac96fe8cc88558761b3a059f7e22d698862d002e2ef45340b463/slskd_api-0.2.3-py3-none-any.whl", hash = "sha256:5fcd02b76a31cee323f2f4d5f737cdd0500185e9030287a3bda4acd00d69bfc1", size = 37172, upload-time = "2026-03-19T14:39:00.867Z" },
 ]
 
 [[package]]

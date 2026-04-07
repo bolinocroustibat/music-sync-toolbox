@@ -24,3 +24,13 @@ client_id = "your_client_id"
 client_secret = "your_client_secret"
 # Optional: if not set, you'll be prompted to select a playlist
 # playlist_id = "your_playlist_id"
+
+[soulseek]
+# Soulseek via slskd REST API: https://github.com/slskd/slskd — set API key in slskd config
+host = "https://127.0.0.1:5031"
+api_key = "your_slskd_api_key"
+# Optional path prefix if slskd is behind a reverse proxy
+# url_base = "/"
+# verify_ssl = true
+# request_timeout = 60
+# Downloads go to slskd's configured download directory (align with local_files.path if desired)

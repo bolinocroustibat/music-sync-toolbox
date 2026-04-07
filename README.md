@@ -15,6 +15,7 @@ Features include:
 - For YouTube Music integration: it requires either:
   - A YouTube Music Developer account: [https://console.cloud.google.com/apis/api/youtube.googleapis.com/credentials](https://console.cloud.google.com/apis/api/youtube.googleapis.com/credentials)
   - Or a YouTube Music session cookie file (see [https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html)), but this might not be working as expected.
+- For Soulseek downloads (menu “via slskd”): a **running [slskd](https://github.com/slskd/slskd)** daemon. It is not a Python package in this repo; install slskd separately (see [Soulseek (slskd)](#soulseek-slskd) below).
 
 ## Install
 ```sh
@@ -60,6 +61,31 @@ You can choose between two authentication methods:
 2. Browser Cookies:
    - Follow the instructions at [ytmusicapi browser setup](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html)
    - Create a `browser.json` file with your browser credentials
+
+### Soulseek (slskd)
+
+The Soulseek menu uses slskd’s **REST API**. You do **not** need the classic Soulseek GUI client; you need **slskd** installed, configured, and running on your machine (or reachable on your network).
+
+#### Install slskd
+
+Follow the upstream project: **[slskd on GitHub](https://github.com/slskd/slskd)**. Common options:
+
+1. **Docker** (official image `slskd/slskd`):
+   - Quick start and port layout are in the [README Quick Start](https://github.com/slskd/slskd#quick-start) (HTTP **5030**, HTTPS **5031**, listening **50300**).
+   - More detail: [Docker guide](https://github.com/slskd/slskd/blob/master/docs/docker.md).
+
+2. **Pre-built binaries**:
+   - Download a release for your OS from [GitHub Releases](https://github.com/slskd/slskd/releases), unzip, and run the binary.
+   - On first run, slskd creates a data directory and `slskd.yml` (e.g. under `~/.local/share/slskd` on Linux/macOS, or `%LocalAppData%\slskd` on Windows).
+
+#### Configure slskd for this toolbox
+
+1. Complete Soulseek **username/password** (and shares/downloads) in slskd using the **web UI** (default login is often `slskd` / `slskd` until you change it) or by editing `slskd.yml`.
+2. Enable **API authentication** in slskd and set an **API key**; put the same value in `config.toml` as `[soulseek].api_key`.
+3. Set `[soulseek].host` to match how you reach the API (the example uses `https://127.0.0.1:5031`). If you use a self-signed certificate, you may need `verify_ssl = false` in `config.toml` (see comments in `config.toml.example`).
+4. Downloads are handled entirely by slskd; files land in slskd’s configured download directory.
+
+Full slskd options: **[configuration reference](https://github.com/slskd/slskd/blob/master/docs/config.md)** and **[example YAML](https://github.com/slskd/slskd/blob/master/config/slskd.example.yml)**.
 
 ## Options
 
@@ -113,6 +139,16 @@ Your YouTube Music OAuth client secret (only needed for OAuth method).
 
 `playlist_id`  
 The ID of the playlist where you want to add tracks. If not set, you'll be prompted to select a playlist when running the script.
+
+### Soulseek (`config.toml`)
+
+`host`  
+Base URL of the slskd API (e.g. `https://127.0.0.1:5031`).
+
+`api_key`  
+Must match the API key configured in slskd.
+
+Optional keys (`url_base`, `verify_ssl`, `request_timeout`) are documented in `config.toml.example`.
 
 ## TODO
 
