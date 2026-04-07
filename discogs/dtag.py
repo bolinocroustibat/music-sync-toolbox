@@ -3,7 +3,7 @@ import re
 import time
 from pathlib import Path
 
-import requests
+import niquests as requests
 from discogs_client.exceptions import HTTPError
 from fuzzywuzzy import process
 from mutagen.easyid3 import EasyID3

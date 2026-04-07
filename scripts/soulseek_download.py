@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 import inquirer
-import requests
+from requests.exceptions import RequestException
 
 from logger import FileLogger
 from soulseek.client import make_client
@@ -41,7 +41,7 @@ def main() -> None:
 
     try:
         check_server_ready(client)
-    except (RuntimeError, requests.RequestException) as e:
+    except (RuntimeError, RequestException) as e:
         logger.error(f"Cannot reach slskd or Soulseek is not ready: {e}")
         sys.exit(1)
 
@@ -107,7 +107,7 @@ def main() -> None:
             extensions=extensions,
             mp3_bitrate_kbps=mp3_bitrate_kbps,
         )
-    except requests.RequestException as e:
+    except RequestException as e:
         logger.error(f"Search request failed: {e}")
         sys.exit(1)
 
@@ -140,7 +140,7 @@ def main() -> None:
 
     try:
         ok = enqueue_candidates(client, selected)
-    except requests.RequestException as e:
+    except RequestException as e:
         logger.error(f"Enqueue failed: {e}")
         sys.exit(1)
 
