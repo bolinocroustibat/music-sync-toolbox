@@ -20,24 +20,33 @@ Features include:
 ## Install
 ```sh
 uv sync
+cp config.toml.example config.toml
+# Edit config.toml with your API credentials (see Config below)
 ```
 
 ## Usage
 ```sh
-uv run music-sync
+uv run music-sync --path /path/to/your/music
 ```
 
-This will show a menu with the different features available.
+Pass `--path` / `-p` when you pick an action that scans local files (Discogs tagging, rename from tags, add local tracks to Spotify or YouTube Music). Other menu options do not need it.
+
+For shell tab-completion on the music directory (requires [argcomplete](https://github.com/kislyuk/argcomplete)), install the hook once, for example:
+
+```sh
+eval "$(register-python-argcomplete music-sync)"
+eval "$(register-python-argcomplete music-sync-toolbox)"
+```
+
+Add that line to your `~/.zshrc` or `~/.bashrc` if you want it permanently (use the script name you actually run).
+
+The command opens an interactive menu of features.
 
 ## Config
-On the first run, it will ask for some inputs. You can change these variables after in the `config.toml` file, following the `config.toml.example` file.
+Before the first run, copy `config.toml.example` to `config.toml` in the project directory and fill in your credentials. You can adjust options later by editing `config.toml` (see the **Options** section below for field meanings).
 
-### Local Files Setup
-`path`
-The path to your music files directory. This is only required for:
-- Local file tag updates from Discogs
-- File renaming based on tags
-- Adding local files to Spotify playlist
+### Local music directory
+Pass the folder that contains your audio files on the command line with `--path` / `-p` whenever you run an action that needs it (see Usage). It is not stored in `config.toml`. If you upgrade from an older version, remove the `[local_files]` section from `config.toml` if it is still present.
 
 ### Discogs Setup
 For the discogs access token, you can create one [here](https://www.discogs.com/settings/developers).
@@ -89,11 +98,11 @@ Full slskd options: **[configuration reference](https://github.com/slskd/slskd/b
 
 ## Options
 
-### Common Options
-`path`  
-The path to your music files directory. Only required for features that work with local files.
+### Command line
+`--path` / `-p DIR`  
+Directory containing your music files. Required when you choose a menu action that scans local files.
 
-### Local Files (💿) Options
+### Discogs (`config.toml` — 💿) Options
 `token`  
 Your Discogs API token.
 

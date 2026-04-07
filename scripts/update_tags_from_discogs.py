@@ -1,5 +1,4 @@
 import sys
-import tomllib
 from pathlib import Path
 
 from rich.progress import (
@@ -122,27 +121,23 @@ def update_tags_from_discogs(directory: Path, config=None, ds=None) -> None:
 
 
 if __name__ == "__main__":
-    # Get media directory from config
+    import argparse
+
+    from cli_helpers import activate_argcomplete, add_media_path_argument
+
+    parser = argparse.ArgumentParser(
+        description="Update ID3 tags from Discogs for files under a directory.",
+    )
+    add_media_path_argument(parser, required=True)
+    activate_argcomplete(parser)
+    ns = parser.parse_args()
+    media_path = ns.path.expanduser().resolve()
+
     config_path = Path("config.toml")
     if not config_path.is_file():
         logger.error("Configuration file not found")
         sys.exit(1)
 
-    try:
-        with open(config_path, "rb") as f:
-            config_data = tomllib.load(f)
-            media_path = Path(config_data["local_files"]["path"].replace("\\", ""))
-    except Exception as e:
-        logger.error(f"Error reading config: {e}")
-        sys.exit(1)
-
-    if not media_path.is_dir():
-        logger.error(f"Media directory not found: {media_path}")
-        sys.exit(1)
-
-    # Initialize Discogs config and client
     discogs_config = DiscogsConfig()
     ds = dc.Client("discogs_tag/0.5", user_token=discogs_config.token)
-
-    # Run the update
     update_tags_from_discogs(media_path, discogs_config, ds)

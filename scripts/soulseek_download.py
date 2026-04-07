@@ -3,7 +3,6 @@ from pathlib import Path
 
 import inquirer
 import requests
-from inquirer_prompt import prompt
 
 from logger import FileLogger
 from soulseek.client import make_client
@@ -52,7 +51,7 @@ def main() -> None:
             message="Search Soulseek",
         ),
     ]
-    answers = prompt(questions)
+    answers = inquirer.prompt(questions)
     if not answers or not (answers.get("query") or "").strip():
         logger.error("Search cancelled or empty query")
         sys.exit(1)
@@ -67,7 +66,7 @@ def main() -> None:
             default=["mp3", "flac"],
         ),
     ]
-    format_answers = prompt(format_questions)
+    format_answers = inquirer.prompt(format_questions)
     if not format_answers:
         logger.error("Cancelled")
         sys.exit(1)
@@ -86,7 +85,7 @@ def main() -> None:
             default="",
         ),
     ]
-    br_answers = prompt(br_questions)
+    br_answers = inquirer.prompt(br_questions)
     if br_answers is None:
         logger.error("Cancelled")
         sys.exit(1)
@@ -126,7 +125,7 @@ def main() -> None:
             choices=choices,
         ),
     ]
-    pick_answers = prompt(pick_questions)
+    pick_answers = inquirer.prompt(pick_questions)
     if not pick_answers:
         logger.error("Selection cancelled")
         sys.exit(1)

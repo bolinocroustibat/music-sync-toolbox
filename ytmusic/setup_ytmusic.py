@@ -3,7 +3,6 @@ from pathlib import Path
 import sys
 import json
 import inquirer
-from inquirer_prompt import prompt
 from ytmusic.config import Config
 from ytmusic.logger import logger
 
@@ -106,7 +105,7 @@ def choose_auth_method() -> str:
             carousel=True,
         )
     ]
-    answers = prompt(questions)
+    answers = inquirer.prompt(questions)
     if not answers:  # User pressed Ctrl+C
         raise KeyboardInterrupt("Authentication method selection cancelled")
     return answers["auth_method"]

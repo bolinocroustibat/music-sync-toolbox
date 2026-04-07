@@ -1,6 +1,5 @@
 import re
 import inquirer
-from inquirer_prompt import prompt
 
 from local_files.logger import logger
 from local_files.music_file import MusicFile
@@ -57,7 +56,7 @@ def rename_file(music_file: MusicFile, confirm: bool = True) -> tuple[bool, bool
                     default=False,
                 ),
             ]
-            answers = prompt(questions)
+            answers = inquirer.prompt(questions)
             if not answers or not answers["confirm"]:
                 logger.info(f"Skipping rename of: {music_file.path}")
                 return False, True

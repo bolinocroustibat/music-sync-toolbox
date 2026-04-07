@@ -1,7 +1,3 @@
-[local_files]
-# Path to your music files directory
-path = "/your/music/path/"
-
 [discogs]
 token = "your_token"
 overwrite_year = true
@@ -33,4 +29,4 @@ api_key = "your_slskd_api_key"
 # url_base = "/"
 # verify_ssl = true
 # request_timeout = 60
-# Downloads go to slskd's configured download directory (align with local_files.path if desired)
+# Downloads go to slskd's configured download directory

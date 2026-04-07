@@ -24,22 +24,20 @@ config = SpotifyConfig()
 logger = FileLogger(Path("scripts") / "local_to_spotify.log")
 
 
-def main() -> None:
+def main(media_path: Path) -> None:
     # Initialize Spotify client
     sp = setup_spotify()
 
     # Get playlist ID from config or user selection
     playlist_id = select_spotify_playlist(sp, config.playlist_id)
 
-    # Check if media path is set
-    if not config.media_path:
-        logger.error("Media path is not set")
+    if not media_path.is_dir():
+        logger.error(f"Media directory not found: {media_path}")
         sys.exit(1)
 
-    # Scan directory for music files
-    music_files: list[MusicFile] = get_music_files(config.media_path)
+    music_files: list[MusicFile] = get_music_files(media_path)
 
-    logger.info(f"Found {len(music_files)} music files in {config.media_path}")
+    logger.info(f"Found {len(music_files)} music files in {media_path}")
 
     if not music_files:
         logger.warning("No local .mp3, .flac, or .m4a files found in directory")
@@ -104,4 +102,14 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    from cli_helpers import activate_argcomplete, add_media_path_argument
+
+    parser = argparse.ArgumentParser(
+        description="Add local music files to a Spotify playlist.",
+    )
+    add_media_path_argument(parser, required=True)
+    activate_argcomplete(parser)
+    ns = parser.parse_args()
+    main(ns.path.expanduser().resolve())
