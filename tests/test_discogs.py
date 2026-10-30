@@ -77,9 +77,27 @@ class FakeDiscogs:
 
 @pytest.fixture
 def fake_cover(monkeypatch):
-    monkeypatch.setattr(
-        "discogs.dtag.requests.get", lambda url, **_: SimpleNamespace(content=b"\xff\xd8jpeg")
-    )
+    """Serve a fake JPEG for cover downloads; returns the kwargs of each request."""
+    requests_made = []
+
+    def get(url, **kwargs):
+        requests_made.append(kwargs)
+        return SimpleNamespace(content=b"\xff\xd8jpeg", raise_for_status=lambda: None)
+
+    monkeypatch.setattr("discogs.dtag.requests.get", get)
+    return requests_made
+
+
+class FakeMP4(dict):
+    """Stands in for mutagen's MP4: building a real .m4a needs an encoder."""
+
+    saved: dict = {}
+
+    def __init__(self, path):
+        super().__init__(FakeMP4.saved)
+
+    def save(self):
+        FakeMP4.saved = dict(self)
 
 
 class TestClean:
@@ -266,6 +284,53 @@ class TestDTagSave:
         tag.save()
 
         assert EasyID3(path)["genre"] == ["House"]
+
+    def test_cover_download_has_a_timeout(self, make_mp3, fake_cover):
+        tag = self.found(make_mp3(artist="A", title="T"), make_config())
+        tag.image = "https://img/cover.jpg"
+
+        tag.save()
+
+        assert fake_cover and all(r.get("timeout") for r in fake_cover)
+
+    def test_failed_cover_download_still_saves_tags(self, make_mp3, monkeypatch):
+        def fail(*_, **__):
+            raise ConnectionError("timed out")
+
+        monkeypatch.setattr("discogs.dtag.requests.get", fail)
+        path = make_mp3(artist="A", title="T")
+        tag = self.found(path, make_config())
+        tag.image = "https://img/cover.jpg"
+
+        tag.save()
+
+        assert EasyID3(path)["genre"] == ["House"]
+        assert not tag.cover_updated
+
+    def test_existing_cover_kept_without_overwrite(self, make_mp3, fake_cover):
+        tag = self.found(make_mp3(artist="A", title="T"), make_config())
+        tag.image, tag.cover_embedded = "https://img/cover.jpg", True
+
+        tag.save()
+
+        assert fake_cover == [] and not tag.cover_updated
+
+    @pytest.mark.parametrize(
+        ("existing", "overwrite", "embedded"),
+        [({}, False, True), ({"covr": ["old"]}, False, False), ({"covr": ["old"]}, True, True)],
+    )
+    def test_m4a_cover(self, tmp_path, monkeypatch, fake_cover, existing, overwrite, embedded):
+        monkeypatch.setattr("discogs.dtag.MP4", FakeMP4)
+        FakeMP4.saved = dict(existing)
+        path = tmp_path / "track.m4a"
+        path.write_bytes(b"")
+        tag = self.found(path, make_config(overwrite_cover=overwrite))
+        tag.image = "https://img/cover.jpg"
+
+        tag.save()
+
+        assert tag.cover_updated is embedded
+        assert (FakeMP4.saved["covr"] != ["old"]) is embedded
 
     def test_unsupported_format_does_not_crash(self, tmp_path):
         path = tmp_path / "track.ogg"

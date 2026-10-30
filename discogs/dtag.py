@@ -17,6 +17,8 @@ from mutagen._util import MutagenError
 from local_files.logger import logger
 from local_files.music_file import MusicFile
 
+COVER_TIMEOUT_S = 30
+
 
 class DTag(MusicFile):
     def __init__(self, path: Path, original_filename: str, config, ds) -> None:
@@ -174,57 +176,53 @@ class DTag(MusicFile):
                     audio["\xa9day"] = self.year
                     self.year_updated = True
         # save image
-        if hasattr(self, "image") and self.config.embed_cover:
-            if self.config.overwrite_cover:
-                audio["covr"] = [
-                    MP4Cover(
-                        requests.get(self.image).content,
-                        imageformat=MP4Cover.FORMAT_JPEG,
-                    )
-                ]
-                self.cover_updated = True
+        cover = self._cover_to_embed()
+        if cover:
+            audio["covr"] = [MP4Cover(cover, imageformat=MP4Cover.FORMAT_JPEG)]
+            self.cover_updated = True
         audio.save()
 
+    def _cover_to_embed(self) -> bytes | None:
+        """Download the Discogs cover if it should be embedded, else None."""
+        if not hasattr(self, "image") or not self.config.embed_cover:
+            return None
+        if self.cover_embedded and not self.config.overwrite_cover:
+            return None
+        try:
+            response = requests.get(self.image, timeout=COVER_TIMEOUT_S)
+            response.raise_for_status()
+        except Exception as e:
+            logger.warning(f"Could not download cover, skipping it: {e}")
+            return None
+        return response.content
+
     def _image_flac(self) -> None:
-        if hasattr(self, "image") and self.config.embed_cover:
+        cover = self._cover_to_embed()
+        if cover:
             audio = FLAC(self.path)
             img = Picture()
             img.type = 3
-            img.data = requests.get(self.image).content
-            if self.config.overwrite_cover:
-                audio.clear_pictures()
-                audio.add_picture(img)
-                self.cover_updated = True
-            else:
-                if self.cover_embedded is False:
-                    audio.clear_pictures()
-                    audio.add_picture(img)
-                    self.cover_updated = True
+            img.data = cover
+            audio.clear_pictures()
+            audio.add_picture(img)
             audio.save()
+            self.cover_updated = True
 
     def _image_mp3(self) -> None:
-        def _update_image(path: Path, data: bytes) -> None:
+        cover = self._cover_to_embed()
+        if cover:
             # del image
-            audio_id3 = ID3(path)
+            audio_id3 = ID3(self.path)
             audio_id3.delall("APIC")
             audio_id3.save()
 
             # update
             audio = MP3(self.path, ID3=ID3)
             audio.tags.add(
-                APIC(encoding=3, mime="image/jpeg", type=3, desc="Cover", data=data)
+                APIC(encoding=3, mime="image/jpeg", type=3, desc="Cover", data=cover)
             )
             audio.save()
-
-        # check if image was found
-        if hasattr(self, "image") and self.config.embed_cover:
-            if self.config.overwrite_cover:
-                _update_image(self.path, requests.get(self.image).content)
-                self.cover_updated = True
-            else:
-                if self.cover_embedded is False:
-                    _update_image(self.path, requests.get(self.image).content)
-                    self.cover_updated = True
+            self.cover_updated = True
 
     def search(self, retry: int = 3) -> bool:
         """Search Discogs for this track; return True if a match was found."""
