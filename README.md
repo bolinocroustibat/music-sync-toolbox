@@ -137,7 +137,7 @@ Your Spotify application client ID.
 Your Spotify application client secret.
 
 `redirect_uri`  
-The redirect URI for OAuth authentication (default: http://localhost:8888/callback).
+The redirect URI for OAuth authentication (default: http://127.0.0.1:8888/callback). It must also be listed in your app's Redirect URIs on the [Spotify dashboard](https://developer.spotify.com/dashboard). Spotify no longer accepts `localhost`.
 
 `playlist_id`  
 The ID of the playlist where you want to add tracks. If not set, you'll be prompted to select a playlist when running the script.

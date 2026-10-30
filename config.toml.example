@@ -10,7 +10,7 @@ rename_file = false
 # OAuth credentials from Spotify Developer Dashboard
 client_id = "your_client_id"
 client_secret = "your_client_secret"
-redirect_uri = "http://localhost:8888/callback"
+redirect_uri = "http://127.0.0.1:8888/callback"
 # Optional: if not set, you'll be prompted to select a playlist
 # playlist_id = "your_playlist_id"
 
