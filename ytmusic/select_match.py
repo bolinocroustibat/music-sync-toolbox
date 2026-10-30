@@ -1,5 +1,9 @@
 from ytmusic.logger import logger
 
+# Returned when the user explicitly skips the track. Falsy like None, so callers that
+# only check `if video_id:` treat it as "nothing selected".
+SKIPPED = ""
+
 
 def select_match(matches: list[dict], auto_first: bool = False) -> str | None:
     """
@@ -10,11 +14,12 @@ def select_match(matches: list[dict], auto_first: bool = False) -> str | None:
         auto_first: If True, automatically select the first match without prompting.
 
     Returns:
-        str | None: Selected video ID, or None if skipped or invalid.
+        str | None: Selected video ID, SKIPPED if the user skipped the track, or None
+            if the choice was invalid.
 
     Notes:
         - Prompts the user to select a match by number or skip.
-        - Returns None if the user skips or makes an invalid selection.
+        - Returns SKIPPED if the user skips, None on an invalid selection.
         - When auto_first is True, automatically selects the first match.
     """
     # Show all potential matches
@@ -30,7 +35,7 @@ def select_match(matches: list[dict], auto_first: bool = False) -> str | None:
         choice = input("\nSelect match number (1 is default, 's' to skip): ").strip().lower()
         if choice == "s":
             logger.warning("Track skipped")
-            return None
+            return SKIPPED
 
     if choice == "" or choice == "1":
         choice = "1"

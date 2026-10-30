@@ -4,7 +4,7 @@ from pathlib import Path
 from ytmusicapi import YTMusic
 
 from logger import FileLogger
-from scripts.playlist_sync import SyncMemory, filter_already_synced
+from scripts.playlist_sync import SyncMemory, select_tracks_to_sync
 from spotify import (
     Config as SpotifyConfig,
 )
@@ -39,6 +39,7 @@ from ytmusic import (
 from ytmusic import (
     select_playlist as select_ytmusic_playlist,
 )
+from ytmusic.select_match import SKIPPED
 
 logger = FileLogger(Path("scripts") / "spotify_to_ytmusic.log")
 
@@ -85,6 +86,8 @@ def process_tracks(
                 else:
                     tracks_skipped += 1
             else:
+                if video_id == SKIPPED and memory:
+                    memory.remember(track, None)
                 tracks_skipped += 1
         else:
             tracks_skipped += 1
@@ -119,9 +122,12 @@ def main() -> None:
     destination_tracks = get_ytmusic_playlist_track_details(
         ytm, ytmusic_playlist_id, allow_empty=True
     )
-    tracks, already_synced = filter_already_synced(tracks, destination_tracks, memory)
+    tracks, already_synced, previously_skipped = select_tracks_to_sync(
+        tracks, destination_tracks, memory
+    )
     logger.info(
-        f"{already_synced} tracks already in the YouTube Music playlist, {len(tracks)} to sync"
+        f"{already_synced} tracks already in the YouTube Music playlist, "
+        f"{previously_skipped} skipped before, {len(tracks)} to sync"
     )
 
     # Process tracks
@@ -132,6 +138,7 @@ def main() -> None:
     # Print summary
     logger.info("\nSummary:")
     logger.info(f"Tracks already synced: {already_synced}")
+    logger.info(f"Tracks skipped in previous syncs: {previously_skipped}")
     logger.success(f"Tracks added to YouTube Music: {tracks_added}")
     logger.warning(f"Tracks skipped: {tracks_skipped}")
 

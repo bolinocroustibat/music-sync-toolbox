@@ -4,7 +4,7 @@ from pathlib import Path
 import spotipy
 
 from logger import FileLogger
-from scripts.playlist_sync import SyncMemory, filter_already_synced
+from scripts.playlist_sync import SyncMemory, select_tracks_to_sync
 from spotify import (
     Config as SpotifyConfig,
 )
@@ -38,6 +38,7 @@ from ytmusic import (
 from ytmusic import (
     setup_ytmusic,
 )
+from ytmusic.select_match import SKIPPED
 
 logger = FileLogger(Path("scripts") / "ytmusic_to_spotify.log")
 
@@ -89,7 +90,7 @@ def process_tracks(
 
             if choice == "s":
                 logger.warning("Track skipped")
-                return None
+                return SKIPPED
 
             if choice == "" or choice == "1":
                 choice = "1"
@@ -123,6 +124,8 @@ def process_tracks(
             else:
                 tracks_skipped += 1
         else:
+            if track_id == SKIPPED and memory:
+                memory.remember(track, None)
             tracks_skipped += 1
 
     return tracks_added, tracks_skipped
@@ -155,8 +158,13 @@ def main() -> None:
     destination_tracks = get_spotify_playlist_track_details(
         sp, spotify_playlist_id, allow_empty=True
     )
-    tracks, already_synced = filter_already_synced(tracks, destination_tracks, memory)
-    logger.info(f"{already_synced} tracks already in the Spotify playlist, {len(tracks)} to sync")
+    tracks, already_synced, previously_skipped = select_tracks_to_sync(
+        tracks, destination_tracks, memory
+    )
+    logger.info(
+        f"{already_synced} tracks already in the Spotify playlist, "
+        f"{previously_skipped} skipped before, {len(tracks)} to sync"
+    )
 
     # Process tracks
     tracks_added, tracks_skipped = process_tracks(
@@ -166,6 +174,7 @@ def main() -> None:
     # Print summary
     logger.info("\nSummary:")
     logger.info(f"Tracks already synced: {already_synced}")
+    logger.info(f"Tracks skipped in previous syncs: {previously_skipped}")
     logger.success(f"Tracks added to Spotify: {tracks_added}")
     logger.warning(f"Tracks skipped: {tracks_skipped}")
 

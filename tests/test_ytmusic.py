@@ -11,6 +11,7 @@ from ytmusic import (
     search_track,
     select_match,
 )
+from ytmusic.select_match import SKIPPED
 
 
 class TestGetPlaylistTrackIds:
@@ -94,7 +95,7 @@ class TestSelectMatch:
     matches = [{"id": "v1", "name": "A", "artist": "X"}, {"id": "v2", "name": "B", "artist": "Y"}]
 
     @pytest.mark.parametrize(
-        ("answer", "expected"), [("", "v1"), ("2", "v2"), ("s", None), ("7", None)]
+        ("answer", "expected"), [("", "v1"), ("2", "v2"), ("s", SKIPPED), ("7", None)]
     )
     def test_choice(self, answer, expected, answer_input):
         answer_input(answer)
