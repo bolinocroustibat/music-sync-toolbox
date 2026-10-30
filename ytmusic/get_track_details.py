@@ -28,7 +28,7 @@ def get_playlist_track_details(ytm: YTMusic, ytmusic_playlist_id: str) -> list[d
     try:
         if ytmusic_playlist_id == "LM":
             # Special case for Liked Music
-            results = ytm.get_liked_songs()
+            results = ytm.get_liked_songs(limit=None)
             for track in results["tracks"]:
                 if not track.get("title") or not track.get("artists"):
                     continue
@@ -40,7 +40,7 @@ def get_playlist_track_details(ytm: YTMusic, ytmusic_playlist_id: str) -> list[d
                 )
         else:
             # Regular playlist
-            results = ytm.get_playlist(ytmusic_playlist_id)
+            results = ytm.get_playlist(ytmusic_playlist_id, limit=None)
             for track in results["tracks"]:
                 if not track.get("title") or not track.get("artists"):
                     continue
