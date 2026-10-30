@@ -3,9 +3,7 @@ import sys
 from spotify.logger import logger
 
 
-def get_playlist_track_details(
-    sp: spotipy.Spotify, spotify_playlist_id: str
-) -> list[dict]:
+def get_playlist_track_details(sp: spotipy.Spotify, spotify_playlist_id: str) -> list[dict]:
     """Extract track details (name and artist) from a Spotify playlist.
 
     Fetches all tracks from a Spotify playlist and extracts their basic metadata
@@ -44,9 +42,7 @@ def get_playlist_track_details(
                     track = item["track"]
                     if not track.get("name") or not track.get("artists"):
                         continue
-                    tracks.append(
-                        {"name": track["name"], "artist": track["artists"][0]["name"]}
-                    )
+                    tracks.append({"name": track["name"], "artist": track["artists"][0]["name"]})
                 if results["next"]:
                     results = sp.next(results)
                 else:
@@ -61,9 +57,7 @@ def get_playlist_track_details(
                     track = item["track"]
                     if not track.get("name") or not track.get("artists"):
                         continue
-                    tracks.append(
-                        {"name": track["name"], "artist": track["artists"][0]["name"]}
-                    )
+                    tracks.append({"name": track["name"], "artist": track["artists"][0]["name"]})
                 if results["next"]:
                     results = sp.next(results)
                 else:

@@ -55,3 +55,16 @@ testpaths = ["tests"]
 pythonpath = ["."]
 xfail_strict = true
 filterwarnings = ["ignore::SyntaxWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+# RUF001: the menu's emoji (➕) are intentional
+ignore = ["RUF001"]
+
+[tool.ruff.lint.per-file-ignores]
+# Class-level match lists in tests are read-only fixtures
+"tests/*" = ["RUF012"]

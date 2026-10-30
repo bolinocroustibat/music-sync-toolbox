@@ -27,9 +27,7 @@ def select_match(matches: list[dict], auto_first: bool = False) -> str | None:
     if auto_first:
         choice = "1"
     else:
-        choice = (
-            input("\nSelect match number (1 is default, 's' to skip): ").strip().lower()
-        )
+        choice = input("\nSelect match number (1 is default, 's' to skip): ").strip().lower()
         if choice == "s":
             logger.warning("Track skipped")
             return None

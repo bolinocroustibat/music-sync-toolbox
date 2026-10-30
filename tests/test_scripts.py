@@ -59,7 +59,9 @@ def test_shows_a_counter_per_track(answer_input, no_sleep, capsys):
     ytm = FakeYTMusic(search_results=[yt_track("v1")])
     answer_input("s", "s")
 
-    spotify_to_ytmusic(ytm, [{"name": "A", "artist": "X"}, {"name": "B", "artist": "Y"}], set(), "pl")
+    spotify_to_ytmusic(
+        ytm, [{"name": "A", "artist": "X"}, {"name": "B", "artist": "Y"}], set(), "pl"
+    )
 
     out = capsys.readouterr().out
     assert "[1/2]" in out and "[2/2]" in out
@@ -177,8 +179,12 @@ class TestMainMenu:
     def run(self, monkeypatch, tmp_path):
         """Run main() choosing `action`, from a dir whose config.toml is `config`."""
         calls = {}
-        monkeypatch.setattr(main, "update_tags_from_discogs", lambda *a: calls.setdefault("discogs", a))
-        monkeypatch.setattr(main, "download_from_soulseek", lambda: calls.setdefault("soulseek", ()))
+        monkeypatch.setattr(
+            main, "update_tags_from_discogs", lambda *a: calls.setdefault("discogs", a)
+        )
+        monkeypatch.setattr(
+            main, "download_from_soulseek", lambda: calls.setdefault("soulseek", ())
+        )
 
         def _run(action, config, *argv):
             if config is not None:

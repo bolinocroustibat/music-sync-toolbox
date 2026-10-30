@@ -55,9 +55,7 @@ def main(media_path: Path) -> None:
             track_id = select_ytmusic_match(matches)
             if track_id:
                 if track_id in existing_tracks:
-                    logger.warning(
-                        "Track already exists in YouTube Music playlist - skipping"
-                    )
+                    logger.warning("Track already exists in YouTube Music playlist - skipping")
                     tracks_skipped += 1
                     continue
 

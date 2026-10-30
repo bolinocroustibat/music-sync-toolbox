@@ -46,14 +46,20 @@ def setup_ytmusic() -> YTMusic:
             except KeyError as auth_error:
                 error_msg = str(auth_error)
                 if "'access_token'" in error_msg or "access_token" in error_msg:
-                    logger.error("OAuth token refresh failed: The refresh token is invalid or expired.")
+                    logger.error(
+                        "OAuth token refresh failed: The refresh token is invalid or expired."
+                    )
                     logger.error("This usually happens when:")
                     logger.error("  - The OAuth token is too old and needs regeneration")
-                    logger.error("  - The client_id/client_secret in config.toml don't match the token")
+                    logger.error(
+                        "  - The client_id/client_secret in config.toml don't match the token"
+                    )
                     logger.error("  - The OAuth app permissions have changed")
                     logger.info("\nSolution: Regenerate your OAuth token by running:")
                     logger.info("  uv run ytmusicapi oauth")
-                    logger.info("\nMake sure your client_id and client_secret in config.toml are correct.")
+                    logger.info(
+                        "\nMake sure your client_id and client_secret in config.toml are correct."
+                    )
                 else:
                     logger.error(f"Authentication test failed: Missing key {auth_error}")
                     logger.info("Try regenerating your OAuth token: uv run ytmusicapi oauth")
@@ -61,7 +67,9 @@ def setup_ytmusic() -> YTMusic:
             except Exception as auth_error:
                 error_msg = str(auth_error)
                 if "'access_token'" in error_msg or "access_token" in error_msg:
-                    logger.error("OAuth token refresh failed: The refresh token is invalid or expired.")
+                    logger.error(
+                        "OAuth token refresh failed: The refresh token is invalid or expired."
+                    )
                     logger.info("Try regenerating your OAuth token: uv run ytmusicapi oauth")
                 else:
                     logger.error(f"Authentication test failed: {auth_error}")
@@ -139,9 +147,7 @@ def check_ytmusic_setup_oauth() -> None:
         logger.info("   - Add your Google account email under 'Test users'")
         logger.info("5. Go to APIs & Services > Credentials")
         logger.info("   - Create OAuth 2.0 Client ID")
-        logger.info(
-            "   - Select 'TVs and Limited Input devices' as the application type"
-        )
+        logger.info("   - Select 'TVs and Limited Input devices' as the application type")
         logger.info("   - Copy the Client ID and Client Secret")
         logger.info("\nThen add them to your config.toml file:")
         logger.info("[ytmusic]")
@@ -155,12 +161,10 @@ def check_ytmusic_setup_oauth() -> None:
 
     if not OAUTH_PATH.is_file():
         logger.error("oauth.json file not found.")
-        logger.info(
-            f"\nRun 'uv run ytmusicapi oauth' in your terminal to create {OAUTH_PATH}"
-        )
+        logger.info(f"\nRun 'uv run ytmusicapi oauth' in your terminal to create {OAUTH_PATH}")
         logger.info("Follow the instructions to complete the OAuth flow")
         sys.exit(1)
-    
+
     # Validate oauth.json file structure
     try:
         with open(OAUTH_PATH, "r") as f:
@@ -168,22 +172,16 @@ def check_ytmusic_setup_oauth() -> None:
             if "access_token" not in oauth_data and "token" not in oauth_data:
                 logger.error("oauth.json file is missing required token fields.")
                 logger.error(f"Expected 'access_token' or 'token' field in {OAUTH_PATH}")
-                logger.info(
-                    "\nThe oauth.json file appears to be invalid or expired."
-                )
-                logger.info(
-                    "Run 'uv run ytmusicapi oauth' to regenerate the OAuth token."
-                )
+                logger.info("\nThe oauth.json file appears to be invalid or expired.")
+                logger.info("Run 'uv run ytmusicapi oauth' to regenerate the OAuth token.")
                 sys.exit(1)
     except json.JSONDecodeError as e:
         logger.error(f"oauth.json file is not valid JSON: {e}")
-        logger.info(
-            "\nRun 'uv run ytmusicapi oauth' to regenerate the OAuth token."
-        )
+        logger.info("\nRun 'uv run ytmusicapi oauth' to regenerate the OAuth token.")
         sys.exit(1)
     except Exception as e:
         logger.warning(f"Could not validate oauth.json structure: {e}")
-    
+
     logger.success(f"Found oauth.json at: {OAUTH_PATH}")
 
 

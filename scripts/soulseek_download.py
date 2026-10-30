@@ -147,9 +147,7 @@ def main() -> None:
     if ok:
         logger.success("Download(s) enqueued. Check slskd for transfer progress.")
     else:
-        logger.warning(
-            "One or more enqueue calls returned false; check slskd logs and transfers."
-        )
+        logger.warning("One or more enqueue calls returned false; check slskd logs and transfers.")
 
 
 if __name__ == "__main__":

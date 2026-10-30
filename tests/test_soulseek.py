@@ -60,16 +60,22 @@ class TestFlattenSearchResponses:
         ]
 
     def test_can_exclude_locked_and_restrict_extensions(self):
-        responses = [response("u", [file("a.mp3", "mp3"), file("b.flac", "flac")], [file("c.flac", "flac")])]
+        responses = [
+            response("u", [file("a.mp3", "mp3"), file("b.flac", "flac")], [file("c.flac", "flac")])
+        ]
 
-        out = flatten_search_responses(responses, extensions=frozenset({"flac"}), include_locked=False)
+        out = flatten_search_responses(
+            responses, extensions=frozenset({"flac"}), include_locked=False
+        )
 
         assert [c.file["filename"] for c in out] == ["b.flac"]
 
 
 class TestFormatCandidateLabel:
     def test_mp3_with_bitrate(self):
-        c = SearchCandidate("u", file("a.mp3", "mp3", size=2048, length=180, bitRate=320), locked=False)
+        c = SearchCandidate(
+            "u", file("a.mp3", "mp3", size=2048, length=180, bitRate=320), locked=False
+        )
         assert format_candidate_label(c) == "u | a.mp3 | 2 KiB | 180s | 320 kbps"
 
     def test_locked_flac_with_bit_depth(self):
@@ -86,7 +92,12 @@ class TestServer:
         client = FakeSlskd(
             states=[
                 {"isComplete": False},
-                {"isComplete": True, "responses": [response("u", [file("a.mp3", "mp3", bitRate=128), file("b.flac", "flac")])]},
+                {
+                    "isComplete": True,
+                    "responses": [
+                        response("u", [file("a.mp3", "mp3", bitRate=128), file("b.flac", "flac")])
+                    ],
+                },
             ]
         )
 
@@ -121,7 +132,11 @@ class TestConfig:
         write_config('[soulseek]\nhost = "http://h"\napi_key = "k"\n')
         cfg = Config()
         assert (cfg.host, cfg.api_key, cfg.url_base, cfg.verify_ssl, cfg.request_timeout) == (
-            "http://h", "k", "/", True, None
+            "http://h",
+            "k",
+            "/",
+            True,
+            None,
         )
 
     def test_legacy_slskd_section(self, write_config):

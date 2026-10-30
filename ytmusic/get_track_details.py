@@ -21,9 +21,7 @@ def get_playlist_track_details(ytm: YTMusic, ytmusic_playlist_id: str) -> list[d
         - Exits if no tracks are found or an error occurs.
         - Handles both regular playlists and Liked Music.
     """
-    logger.info(
-        f'Fetching tracks from YouTube Music playlist "{ytmusic_playlist_id}"...'
-    )
+    logger.info(f'Fetching tracks from YouTube Music playlist "{ytmusic_playlist_id}"...')
     tracks: list[dict] = []
     try:
         if ytmusic_playlist_id == "LM":

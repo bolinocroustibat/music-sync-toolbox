@@ -47,9 +47,7 @@ def process_tracks(
             video_id = select_ytmusic_match(matches, auto_first)
             if video_id:
                 if video_id in existing_tracks:
-                    logger.warning(
-                        "Track already exists in YouTube Music playlist - skipping"
-                    )
+                    logger.warning("Track already exists in YouTube Music playlist - skipping")
                     tracks_skipped += 1
                     continue
 
@@ -91,9 +89,7 @@ def main() -> None:
     existing_tracks = get_ytmusic_playlist_track_ids(ytm, ytmusic_playlist_id)
 
     # Process tracks
-    tracks_added, tracks_skipped = process_tracks(
-        ytm, tracks, existing_tracks, ytmusic_playlist_id
-    )
+    tracks_added, tracks_skipped = process_tracks(ytm, tracks, existing_tracks, ytmusic_playlist_id)
 
     # Print summary
     logger.info("\nSummary:")

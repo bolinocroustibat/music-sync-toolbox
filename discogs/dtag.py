@@ -218,9 +218,7 @@ class DTag(MusicFile):
 
             # update
             audio = MP3(self.path, ID3=ID3)
-            audio.tags.add(
-                APIC(encoding=3, mime="image/jpeg", type=3, desc="Cover", data=cover)
-            )
+            audio.tags.add(APIC(encoding=3, mime="image/jpeg", type=3, desc="Cover", data=cover))
             audio.save()
             self.cover_updated = True
 
@@ -228,9 +226,7 @@ class DTag(MusicFile):
         """Search Discogs for this track; return True if a match was found."""
         # check if track has required tags for searching
         if self.search_artist == "" or self.search_title == "":
-            logger.error(
-                "Track does not have the required tags for searching on Discogs."
-            )
+            logger.error("Track does not have the required tags for searching on Discogs.")
             return False
 
         logger.info(f'Searching for "{self.search_title} {self.search_artist}" on Discogs...')

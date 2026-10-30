@@ -30,9 +30,7 @@ class TestMusicFile:
 
 
 class TestGetMusicFiles:
-    def test_filters_audio_files_recursively_and_sorts_by_name(
-        self, tmp_path, make_mp3, make_flac
-    ):
+    def test_filters_audio_files_recursively_and_sorts_by_name(self, tmp_path, make_mp3, make_flac):
         sub = tmp_path / "sub"
         sub.mkdir()
         make_mp3("b.mp3")
