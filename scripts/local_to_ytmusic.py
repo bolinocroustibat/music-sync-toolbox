@@ -1,17 +1,27 @@
 import sys
 from pathlib import Path
 
+from local_files import MusicFile, get_music_files
+from logger import FileLogger
 from ytmusic import (
     Config as YTMusicConfig,
-    setup_ytmusic,
-    select_playlist as select_ytmusic_playlist,
-    search_track as search_ytmusic_track,
-    select_match as select_ytmusic_match,
+)
+from ytmusic import (
     add_track_to_ytmusic,
+    setup_ytmusic,
+)
+from ytmusic import (
     get_playlist_track_ids as get_ytmusic_playlist_track_ids,
 )
-from logger import FileLogger
-from local_files import get_music_files, MusicFile
+from ytmusic import (
+    search_track as search_ytmusic_track,
+)
+from ytmusic import (
+    select_match as select_ytmusic_match,
+)
+from ytmusic import (
+    select_playlist as select_ytmusic_playlist,
+)
 
 logger = FileLogger(Path("scripts") / "local_to_ytmusic.log")
 

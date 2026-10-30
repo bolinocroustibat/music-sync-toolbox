@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from local_files import logger, get_music_files, MusicFile, rename_file
+from local_files import MusicFile, get_music_files, logger, rename_file
 
 
 def rename_files_from_tags(media_path: Path) -> None:

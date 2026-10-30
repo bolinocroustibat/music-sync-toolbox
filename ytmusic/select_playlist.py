@@ -1,5 +1,6 @@
-from ytmusicapi import YTMusic
 import inquirer
+from ytmusicapi import YTMusic
+
 from ytmusic.list_user_playlists import list_user_playlists
 from ytmusic.logger import logger
 

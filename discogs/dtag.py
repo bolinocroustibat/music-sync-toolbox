@@ -5,14 +5,14 @@ from pathlib import Path
 
 import niquests as requests
 from discogs_client.exceptions import HTTPError
-from rapidfuzz import fuzz, process, utils
+from mutagen._util import MutagenError
 from mutagen.easyid3 import EasyID3
 from mutagen.flac import FLAC, FLACNoHeaderError, Picture
 from mutagen.id3 import ID3
 from mutagen.id3._frames import APIC
 from mutagen.mp3 import MP3, HeaderNotFoundError
 from mutagen.mp4 import MP4, MP4Cover, MP4StreamInfoError
-from mutagen._util import MutagenError
+from rapidfuzz import fuzz, process, utils
 
 from local_files.logger import logger
 from local_files.music_file import MusicFile
@@ -65,7 +65,7 @@ class DTag(MusicFile):
                 "genre": self.genres,
                 "year_found": self.year_found,
                 "year": self.year,
-                "image_found": True if hasattr(self, "image") else False,
+                "image_found": hasattr(self, "image"),
             },
         }
         return json.dumps(tags)
@@ -93,7 +93,7 @@ class DTag(MusicFile):
                     self.local_year = audio["date"][0]
 
                 audio = MP3(self.path)
-                for k in audio.keys():
+                for k in audio:
                     if "covr" in k or "APIC" in k:
                         self.cover_embedded = True
             except (HeaderNotFoundError, MutagenError, KeyError):

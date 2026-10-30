@@ -1,23 +1,23 @@
 import argparse
 import sys
 from pathlib import Path
-import inquirer
-import discogs_client as dc
 
-from scripts.cli_helpers import activate_argcomplete, add_media_path_argument
+import discogs_client as dc
+import inquirer
+
 from discogs import Config as DiscogsConfig
 from local_files import logger as discogs_logger
-from scripts.update_tags_from_discogs import update_tags_from_discogs
-from scripts.rename_files_from_tags import rename_files_from_tags
-
 from scripts import (
     add_local_tracks_to_spotify,
     add_local_tracks_to_ytmusic,
     download_from_soulseek,
-    import_ytmusic_to_spotify,
     import_spotify_to_ytmusic,
+    import_ytmusic_to_spotify,
     manage_spotify_duplicates,
 )
+from scripts.cli_helpers import activate_argcomplete, add_media_path_argument
+from scripts.rename_files_from_tags import rename_files_from_tags
+from scripts.update_tags_from_discogs import update_tags_from_discogs
 
 CONFIG_PATH = Path("config.toml")
 
@@ -34,7 +34,10 @@ ACTIONS_NEEDING_MEDIA_PATH = frozenset(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Music Sync Toolbox — interactive menu for Spotify, YouTube Music, Discogs, and local files.",
+        description=(
+            "Music Sync Toolbox — interactive menu for Spotify, YouTube Music, Discogs, "
+            "and local files."
+        ),
     )
     add_media_path_argument(parser, required=False)
     activate_argcomplete(parser)

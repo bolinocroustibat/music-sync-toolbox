@@ -1,5 +1,7 @@
-import spotipy
 import time
+
+import spotipy
+
 from spotify.logger import logger
 
 

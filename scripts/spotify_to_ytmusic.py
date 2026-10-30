@@ -3,22 +3,38 @@ from pathlib import Path
 
 from ytmusicapi import YTMusic
 
+from logger import FileLogger
 from spotify import (
     Config as SpotifyConfig,
-    setup_spotify,
-    select_playlist as select_spotify_playlist,
+)
+from spotify import (
     get_playlist_track_details as get_spotify_playlist_track_details,
+)
+from spotify import (
+    select_playlist as select_spotify_playlist,
+)
+from spotify import (
+    setup_spotify,
 )
 from ytmusic import (
     Config as YTMusicConfig,
-    setup_ytmusic,
-    select_playlist as select_ytmusic_playlist,
-    get_playlist_track_ids as get_ytmusic_playlist_track_ids,
-    search_track as search_ytmusic_track,
-    select_match as select_ytmusic_match,
-    add_track_to_ytmusic,
 )
-from logger import FileLogger
+from ytmusic import (
+    add_track_to_ytmusic,
+    setup_ytmusic,
+)
+from ytmusic import (
+    get_playlist_track_ids as get_ytmusic_playlist_track_ids,
+)
+from ytmusic import (
+    search_track as search_ytmusic_track,
+)
+from ytmusic import (
+    select_match as select_ytmusic_match,
+)
+from ytmusic import (
+    select_playlist as select_ytmusic_playlist,
+)
 
 logger = FileLogger(Path("scripts") / "spotify_to_ytmusic.log")
 

@@ -1,8 +1,10 @@
-from ytmusicapi import YTMusic, OAuthCredentials
-from pathlib import Path
-import sys
 import json
+import sys
+from pathlib import Path
+
 import inquirer
+from ytmusicapi import OAuthCredentials, YTMusic
+
 from ytmusic.config import Config
 from ytmusic.logger import logger
 
@@ -63,7 +65,9 @@ def setup_ytmusic() -> YTMusic:
                 else:
                     logger.error(f"Authentication test failed: Missing key {auth_error}")
                     logger.info("Try regenerating your OAuth token: uv run ytmusicapi oauth")
-                raise Exception(f"Failed to authenticate with YouTube Music: {auth_error}")
+                raise Exception(
+                    f"Failed to authenticate with YouTube Music: {auth_error}"
+                ) from auth_error
             except Exception as auth_error:
                 error_msg = str(auth_error)
                 if "'access_token'" in error_msg or "access_token" in error_msg:
@@ -75,7 +79,9 @@ def setup_ytmusic() -> YTMusic:
                     logger.error(f"Authentication test failed: {auth_error}")
                     logger.error("The OAuth token may be expired or invalid.")
                     logger.info("Try regenerating your OAuth token: uv run ytmusicapi oauth")
-                raise Exception(f"Failed to authenticate with YouTube Music: {auth_error}")
+                raise Exception(
+                    f"Failed to authenticate with YouTube Music: {auth_error}"
+                ) from auth_error
             return ytm
         except Exception as e:
             # Only log if it's not already been logged above (i.e., not an auth error)
@@ -167,7 +173,7 @@ def check_ytmusic_setup_oauth() -> None:
 
     # Validate oauth.json file structure
     try:
-        with open(OAUTH_PATH, "r") as f:
+        with open(OAUTH_PATH) as f:
             oauth_data = json.load(f)
             if "access_token" not in oauth_data and "token" not in oauth_data:
                 logger.error("oauth.json file is missing required token fields.")

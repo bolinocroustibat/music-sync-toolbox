@@ -1,5 +1,7 @@
-from ytmusicapi import YTMusic
 import time
+
+from ytmusicapi import YTMusic
+
 from ytmusic.logger import logger
 
 MAX_MATCHES_TO_DISPLAY = 4  # Maximum number of matches to show for each track
