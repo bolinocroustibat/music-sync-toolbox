@@ -1,3 +1,5 @@
+import sys
+
 import inquirer
 from ytmusicapi import YTMusic
 
@@ -21,7 +23,7 @@ def select_playlist(ytm: YTMusic, playlist_id: str | None = None) -> str:
         str: The selected playlist ID.
 
     Raises:
-        Exception: If no playlists are found for the user.
+        SystemExit: If no playlists are found for the user.
         KeyboardInterrupt: If user cancels the selection process.
         Exception: If the specified playlist_id is invalid or inaccessible.
 
@@ -53,7 +55,14 @@ def select_playlist(ytm: YTMusic, playlist_id: str | None = None) -> str:
     playlists = list_user_playlists(ytm)
 
     if not playlists:
-        raise Exception("No playlists found for user")
+        logger.error("No YouTube Music playlists found for this account.")
+        logger.info(
+            "If you do have playlists, the credentials probably belong to another account. "
+            "If your playlists are on a secondary channel (brand account), switch to it on "
+            "music.youtube.com before copying the request headers: they must include "
+            "'x-goog-pageid'."
+        )
+        sys.exit(1)
 
     # Create choices list for inquirer with formatted display
     choices = [
