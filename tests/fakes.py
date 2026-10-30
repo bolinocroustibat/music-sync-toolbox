@@ -31,6 +31,7 @@ class FakeSpotify:
         has_next = offset + limit < len(source)
         return {
             "items": items,
+            "total": len(source),
             "next": f"next?offset={offset + limit}" if has_next else None,
             "_source": source,
             "_offset": offset + limit,
@@ -43,6 +44,9 @@ class FakeSpotify:
         return self._page(page["_source"], page["_offset"], page["_limit"])
 
     # --- reads --------------------------------------------------------------
+    def current_user(self):
+        return {"id": "me", "display_name": "Me"}
+
     def playlist_items(self, playlist_id, fields=None, limit=100, offset=0, **_):
         if playlist_id == "liked":
             raise SpotifyException(400, -1, "Invalid base62 id")
@@ -84,6 +88,16 @@ class FakeSpotify:
 
     def remaining_ids(self):
         return [it["track"]["id"] for it in self.playlist if it["track"]]
+
+
+def spotify_playlist(playlist_id, name=None, owner="me", collaborative=False, total=0):
+    return {
+        "id": playlist_id,
+        "name": name or playlist_id,
+        "owner": {"id": owner},
+        "collaborative": collaborative,
+        "tracks": {"total": total},
+    }
 
 
 def _track_id(uri_or_id):
