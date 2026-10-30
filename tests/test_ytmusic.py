@@ -16,7 +16,6 @@ class TestGetPlaylistTrackIds:
         ytm = FakeYTMusic(playlist=[yt_track("v1"), yt_track("v2"), {"videoId": None}])
         assert get_playlist_track_ids(ytm, "pl") == {"v1", "v2"}
 
-    @pytest.mark.xfail(reason="get_playlist defaults to limit=100")
     def test_fetches_whole_playlist(self):
         ytm = FakeYTMusic(playlist=[yt_track(f"v{i}") for i in range(150)])
         assert len(get_playlist_track_ids(ytm, "pl")) == 150
@@ -35,12 +34,10 @@ class TestGetPlaylistTrackDetails:
         with pytest.raises(SystemExit):
             get_playlist_track_details(FakeYTMusic(), "pl")
 
-    @pytest.mark.xfail(reason="get_playlist defaults to limit=100")
     def test_fetches_whole_playlist(self):
         ytm = FakeYTMusic(playlist=[yt_track(f"v{i}") for i in range(150)])
         assert len(get_playlist_track_details(ytm, "pl")) == 150
 
-    @pytest.mark.xfail(reason="get_liked_songs defaults to limit=100")
     def test_fetches_all_liked_music(self):
         ytm = FakeYTMusic(liked=[yt_track(f"v{i}") for i in range(150)])
         assert len(get_playlist_track_details(ytm, "LM")) == 150
@@ -51,13 +48,11 @@ class TestListUserPlaylists:
         ytm = FakeYTMusic(library=[{"title": "zed", "playlistId": "z", "count": 1}])
         assert [p["id"] for p in list_user_playlists(ytm)] == ["LM", "z"]
 
-    @pytest.mark.xfail(reason="track_count is len() of the response dict, not of its tracks")
     def test_liked_music_track_count(self):
         ytm = FakeYTMusic(liked=[yt_track(f"v{i}") for i in range(12)])
         liked = next(p for p in list_user_playlists(ytm) if p["id"] == "LM")
         assert liked["track_count"] == 12
 
-    @pytest.mark.xfail(reason="get_library_playlists defaults to limit=25")
     def test_returns_all_library_playlists(self):
         ytm = FakeYTMusic(
             library=[{"title": f"p{i}", "playlistId": f"p{i}", "count": 0} for i in range(40)]

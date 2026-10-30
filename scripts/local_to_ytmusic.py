@@ -16,6 +16,7 @@ from ytmusic import (
     search_track as search_ytmusic_track,
     select_match as select_ytmusic_match,
     add_track_to_ytmusic,
+    get_playlist_track_ids as get_ytmusic_playlist_track_ids,
 )
 from logger import FileLogger
 from local_files import get_music_files, MusicFile
@@ -47,12 +48,7 @@ def main(media_path: Path) -> None:
     tracks_skipped = 0
 
     # Get existing tracks in playlist
-    logger.info("Fetching existing tracks from playlist...")
-    existing_tracks: set[str] = set()
-    results = ytm.get_playlist(playlist_id)
-    for track in results["tracks"]:
-        if track.get("videoId"):
-            existing_tracks.add(track["videoId"])
+    existing_tracks = get_ytmusic_playlist_track_ids(ytm, playlist_id)
 
     # Process each music file
     logger.info("\nProcessing files...")
