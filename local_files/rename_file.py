@@ -64,6 +64,7 @@ def rename_file(music_file: MusicFile, confirm: bool = True) -> tuple[bool, bool
         # Rename file
         music_file.path.rename(new_path)
         logger.success(f"Renamed: {music_file.path.name} -> {new_name}")
+        music_file.path = new_path
         return True, False
 
     except Exception as e:

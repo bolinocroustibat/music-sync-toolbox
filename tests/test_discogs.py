@@ -258,7 +258,6 @@ class TestUpdateTagsFromDiscogs:
 
         assert EasyID3(path)["genre"] == ["Electronic, House"]
 
-    @pytest.mark.xfail(reason="file is renamed before save(), which then opens the old path")
     def test_rename_option_still_saves_tags(self, tmp_path, make_mp3, monkeypatch, no_sleep):
         monkeypatch.setattr("builtins.input", lambda *_: "")
         make_mp3("old name.mp3", artist="Artist", title="Title")
