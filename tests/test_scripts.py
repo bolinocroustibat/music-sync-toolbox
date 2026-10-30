@@ -42,6 +42,29 @@ class TestYTMusicToSpotify:
         assert sp.added == []
 
 
+def test_prompts_are_not_drawn_over_by_a_progress_bar(monkeypatch, answer_input, no_sleep):
+    # A live display (progress bar) would keep redrawing over the match prompts
+    monkeypatch.setattr(
+        "rich.live.Live.start", lambda *_, **__: pytest.fail("live display started")
+    )
+    answer_input("")
+    sp = FakeSpotify(search_results=[hit("t1")])
+
+    ytmusic_to_spotify(sp, [{"name": "Song", "artist": "Artist"}], set(), "pl")
+
+    assert sp.added == [("pl", ["t1"])]
+
+
+def test_shows_a_counter_per_track(answer_input, no_sleep, capsys):
+    ytm = FakeYTMusic(search_results=[yt_track("v1")])
+    answer_input("s", "s")
+
+    spotify_to_ytmusic(ytm, [{"name": "A", "artist": "X"}, {"name": "B", "artist": "Y"}], set(), "pl")
+
+    out = capsys.readouterr().out
+    assert "[1/2]" in out and "[2/2]" in out
+
+
 class TestSpotifyToYTMusic:
     def test_adds_selected_matches_and_skips_existing(self, answer_input, no_sleep):
         ytm = FakeYTMusic(search_results=[yt_track("v1"), yt_track("v2")])

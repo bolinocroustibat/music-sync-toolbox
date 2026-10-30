@@ -1,14 +1,6 @@
 import sys
 from pathlib import Path
 
-from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    TextColumn,
-    BarColumn,
-    TaskProgressColumn,
-)
-
 from spotify import (
     Config as SpotifyConfig,
     setup_spotify,
@@ -53,39 +45,31 @@ def main(media_path: Path) -> None:
 
     # Process each music file
     logger.info("\nProcessing files...")
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        transient=True,
-    ) as progress:
-        task = progress.add_task("Processing files...", total=len(music_files))
-        for music_file in music_files:
-            matches = search_spotify_track(
-                sp, music_file.title, music_file.artist, music_file.path.name
-            )
-            if matches:
-                track_id = select_spotify_match(sp, matches)
-                if track_id:
-                    if track_id in existing_tracks:
-                        logger.warning(
-                            "Track already exists in Spotify playlist - skipping"
-                        )
-                        tracks_skipped += 1
-                        progress.advance(task)
-                        continue
+    # No live progress bar: it would redraw over the match prompts
+    for i, music_file in enumerate(music_files, 1):
+        logger.info(f"\n[{i}/{len(music_files)}]")
+        matches = search_spotify_track(
+            sp, music_file.title, music_file.artist, music_file.path.name
+        )
+        if matches:
+            track_id = select_spotify_match(sp, matches)
+            if track_id:
+                if track_id in existing_tracks:
+                    logger.warning(
+                        "Track already exists in Spotify playlist - skipping"
+                    )
+                    tracks_skipped += 1
+                    continue
 
-                    success, _ = add_track_to_spotify(sp, track_id, playlist_id, 1)
-                    if success:
-                        tracks_added += 1
-                    else:
-                        tracks_skipped += 1
+                success, _ = add_track_to_spotify(sp, track_id, playlist_id, 1)
+                if success:
+                    tracks_added += 1
                 else:
                     tracks_skipped += 1
             else:
                 tracks_skipped += 1
-            progress.advance(task)
+        else:
+            tracks_skipped += 1
 
     # Print summary
     logger.info("\nSummary:")

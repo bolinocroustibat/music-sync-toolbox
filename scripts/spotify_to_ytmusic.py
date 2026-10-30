@@ -2,13 +2,6 @@ import sys
 from pathlib import Path
 
 from ytmusicapi import YTMusic
-from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    TextColumn,
-    BarColumn,
-    TaskProgressColumn,
-)
 
 from spotify import (
     Config as SpotifyConfig,
@@ -43,42 +36,34 @@ def process_tracks(
     retry_delay = 5  # Initial delay in seconds
 
     logger.info("\nProcessing tracks...")
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        transient=True,
-    ) as progress:
-        task = progress.add_task("Processing tracks...", total=len(tracks))
-        for track in tracks:
-            track_name = track["name"]
-            artist_name = track["artist"]
+    # No live progress bar: it would redraw over the match prompts
+    for i, track in enumerate(tracks, 1):
+        logger.info(f"\n[{i}/{len(tracks)}]")
+        track_name = track["name"]
+        artist_name = track["artist"]
 
-            matches = search_ytmusic_track(ytm, track_name, artist_name)
-            if matches:
-                video_id = select_ytmusic_match(matches, auto_first)
-                if video_id:
-                    if video_id in existing_tracks:
-                        logger.warning(
-                            "Track already exists in YouTube Music playlist - skipping"
-                        )
-                        tracks_skipped += 1
-                        progress.advance(task)
-                        continue
-
-                    success, retry_delay = add_track_to_ytmusic(
-                        ytm, video_id, ytmusic_playlist_id, retry_delay
+        matches = search_ytmusic_track(ytm, track_name, artist_name)
+        if matches:
+            video_id = select_ytmusic_match(matches, auto_first)
+            if video_id:
+                if video_id in existing_tracks:
+                    logger.warning(
+                        "Track already exists in YouTube Music playlist - skipping"
                     )
-                    if success:
-                        tracks_added += 1
-                    else:
-                        tracks_skipped += 1
+                    tracks_skipped += 1
+                    continue
+
+                success, retry_delay = add_track_to_ytmusic(
+                    ytm, video_id, ytmusic_playlist_id, retry_delay
+                )
+                if success:
+                    tracks_added += 1
                 else:
                     tracks_skipped += 1
             else:
                 tracks_skipped += 1
-            progress.advance(task)
+        else:
+            tracks_skipped += 1
 
     return tracks_added, tracks_skipped
 
