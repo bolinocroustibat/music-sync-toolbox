@@ -144,7 +144,6 @@ class TestDuplicates:
     def test_liked_songs_have_no_duplicates(self):
         assert find_duplicates(FakeSpotify(), "liked") == {}
 
-    @pytest.mark.xfail(reason="remove_all_occurrences deletes the oldest copy too")
     def test_remove_keeps_one_copy_of_each_track(self, no_sleep):
         sp = FakeSpotify(playlist=self.playlist())
 
@@ -152,7 +151,42 @@ class TestDuplicates:
 
         assert sp.remaining_ids() == ["a", "b", "c"]
 
-    @pytest.mark.xfail(reason="local files (id=None) are grouped as duplicates of each other")
+    def test_remove_keeps_oldest_copy_wherever_it_sits(self, no_sleep):
+        sp = FakeSpotify(
+            playlist=[
+                spotify_item("a", added_at="2024-03-01T00:00:00Z"),
+                spotify_item("b"),
+                spotify_item("a", added_at="2024-01-01T00:00:00Z"),
+            ]
+        )
+
+        remove_duplicates(sp, "pl", find_duplicates(sp, "pl"))
+
+        assert sp.remaining_ids() == ["b", "a"]
+
+    def test_remove_preserves_order_of_interleaved_duplicates(self, no_sleep):
+        ids = ["x", "a", "b", "a", "y", "c", "b", "c", "z", "a"]
+        sp = FakeSpotify(playlist=[spotify_item(i) for i in ids])
+
+        remove_duplicates(sp, "pl", find_duplicates(sp, "pl"))
+
+        assert sp.remaining_ids() == ["x", "a", "b", "y", "c", "z"]
+
+    def test_remove_handles_more_than_one_api_batch(self, no_sleep):
+        sp = FakeSpotify(playlist=[spotify_item(f"t{i % 160}") for i in range(400)])
+
+        remove_duplicates(sp, "pl", find_duplicates(sp, "pl"))
+
+        assert sp.remaining_ids() == [f"t{i}" for i in range(160)]
+
+    def test_failed_re_add_reports_missing_tracks(self, no_sleep, capsys):
+        sp = FakeSpotify(playlist=[spotify_item(i) for i in ["a", "b", "a"]])
+        sp.playlist_add_items = lambda *_, **__: (_ for _ in ()).throw(Exception("boom"))
+
+        remove_duplicates(sp, "pl", find_duplicates(sp, "pl"))
+
+        assert "Add these tracks back manually: a" in capsys.readouterr().out
+
     def test_local_files_are_not_duplicates(self):
         items = [spotify_item(None, name="Local 1"), spotify_item(None, name="Local 2")]
         assert find_duplicates(FakeSpotify(playlist=items), "pl") == {}

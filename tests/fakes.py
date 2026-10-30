@@ -65,8 +65,11 @@ class FakeSpotify:
         return {"id": track_id, "name": "Song", "artists": [{"name": "Artist"}]}
 
     # --- writes -------------------------------------------------------------
-    def playlist_add_items(self, playlist_id, items):
+    def playlist_add_items(self, playlist_id, items, position=None):
         self.added.append((playlist_id, list(items)))
+        new = [spotify_item(_track_id(i), added_at="2099-01-01T00:00:00Z") for i in items]
+        at = len(self.playlist) if position is None else position
+        self.playlist[at:at] = new
 
     def current_user_saved_tracks_add(self, tracks):
         self.saved.extend(tracks)
@@ -76,11 +79,8 @@ class FakeSpotify:
         self.playlist = [it for it in self.playlist if not it["track"] or it["track"]["id"] not in ids]
 
     def playlist_remove_specific_occurrences_of_items(self, playlist_id, items, snapshot_id=None):
-        doomed = {
-            pos for i in items for pos in i["positions"]
-            if self.playlist[pos]["track"]["id"] == _track_id(i["uri"])
-        }
-        self.playlist = [it for pos, it in enumerate(self.playlist) if pos not in doomed]
+        # Spotify silently ignores "positions" and removes every occurrence
+        self.playlist_remove_all_occurrences_of_items(playlist_id, [i["uri"] for i in items])
 
     def remaining_ids(self):
         return [it["track"]["id"] for it in self.playlist if it["track"]]
