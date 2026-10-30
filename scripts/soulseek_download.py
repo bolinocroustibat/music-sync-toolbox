@@ -6,7 +6,8 @@ from requests.exceptions import RequestException
 
 from logger import FileLogger
 from soulseek.client import make_client
-from soulseek.config import Config as SoulseekConfig, SoulseekConfigError
+from soulseek.config import Config as SoulseekConfig
+from soulseek.config import SoulseekConfigError
 from soulseek.search_download import (
     check_server_ready,
     enqueue_candidates,

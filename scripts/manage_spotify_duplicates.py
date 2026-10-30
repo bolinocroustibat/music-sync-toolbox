@@ -6,8 +6,9 @@ from typing import TypedDict
 
 import spotipy
 
-from spotify import setup_spotify, select_playlist as select_spotify_playlist
 from logger import FileLogger
+from spotify import select_playlist as select_spotify_playlist
+from spotify import setup_spotify
 
 logger = FileLogger(Path("scripts") / "spotify_duplicates.log")
 
@@ -26,7 +27,8 @@ def find_duplicates(sp: spotipy.Spotify, playlist_id: str) -> dict[str, list[Tra
     # Special case for Liked Songs
     if playlist_id == "liked":
         logger.info(
-            "Note: Liked Songs cannot contain duplicates by design - Spotify automatically prevents this."
+            "Note: Liked Songs cannot contain duplicates by design - "
+            "Spotify automatically prevents this."
         )
         return {}
 
@@ -161,7 +163,7 @@ def main() -> None:
         return
 
     logger.info(f"\nFound {sum(len(v) - 1 for v in duplicates.values())} duplicate tracks:")
-    for track_id, instances in duplicates.items():
+    for instances in duplicates.values():
         # Get the track name from the first instance (they're all the same track)
         track_name = instances[0]["name"]
         logger.info(f"\n{track_name}")

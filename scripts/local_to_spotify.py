@@ -1,17 +1,29 @@
 import sys
 from pathlib import Path
 
+from local_files import MusicFile, get_music_files
+from logger import FileLogger
 from spotify import (
     Config as SpotifyConfig,
-    setup_spotify,
-    select_playlist as select_spotify_playlist,
-    search_track as search_spotify_track,
-    select_match as select_spotify_match,
+)
+from spotify import (
     add_track as add_track_to_spotify,
+)
+from spotify import (
     get_playlist_track_ids as get_spotify_playlist_track_ids,
 )
-from logger import FileLogger
-from local_files import get_music_files, MusicFile
+from spotify import (
+    search_track as search_spotify_track,
+)
+from spotify import (
+    select_match as select_spotify_match,
+)
+from spotify import (
+    select_playlist as select_spotify_playlist,
+)
+from spotify import (
+    setup_spotify,
+)
 
 logger = FileLogger(Path("scripts") / "local_to_spotify.log")
 

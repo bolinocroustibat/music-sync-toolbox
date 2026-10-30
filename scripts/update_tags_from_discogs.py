@@ -1,17 +1,18 @@
 import sys
 from pathlib import Path
 
+import discogs_client as dc
 from rich.progress import (
+    BarColumn,
     Progress,
     SpinnerColumn,
-    TextColumn,
-    BarColumn,
     TaskProgressColumn,
+    TextColumn,
 )
 
-from local_files import logger, AUDIO_FILES_EXTENSIONS, rename_file
-from discogs import DTag, Config as DiscogsConfig
-import discogs_client as dc
+from discogs import Config as DiscogsConfig
+from discogs import DTag
+from local_files import AUDIO_FILES_EXTENSIONS, logger, rename_file
 
 
 def update_tags_from_discogs(directory: Path, config=None, ds=None) -> None:
@@ -91,7 +92,7 @@ def update_tags_from_discogs(directory: Path, config=None, ds=None) -> None:
 
             # Rename file, once its tags are saved
             if config.rename_file and tag_file.artist and tag_file.title:
-                was_renamed, was_skipped = rename_file(tag_file, confirm=False)
+                was_renamed, _ = rename_file(tag_file, confirm=False)
                 if was_renamed:
                     renamed += 1
 

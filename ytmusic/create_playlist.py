@@ -1,4 +1,5 @@
 from ytmusicapi import YTMusic
+
 from ytmusic.logger import logger
 
 

@@ -1,5 +1,7 @@
-import spotipy
 import sys
+
+import spotipy
+
 from spotify.logger import logger
 
 

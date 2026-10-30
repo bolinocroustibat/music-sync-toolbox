@@ -1,11 +1,12 @@
 from pathlib import Path
+
+from mutagen._file import File
 from mutagen.easyid3 import EasyID3
 from mutagen.flac import FLAC
+from mutagen.id3._util import ID3NoHeaderError
 from mutagen.mp4 import MP4
 from mutagen.oggvorbis import OggVorbis
 from mutagen.wave import WAVE
-from mutagen._file import File
-from mutagen.id3._util import ID3NoHeaderError
 
 from local_files.logger import logger
 
