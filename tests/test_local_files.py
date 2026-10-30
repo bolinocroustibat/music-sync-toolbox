@@ -1,5 +1,3 @@
-import pytest
-
 from local_files import MusicFile, get_music_files, rename_file, sanitize_filename
 
 
@@ -26,7 +24,6 @@ class TestMusicFile:
         music_file = MusicFile(make_mp3())
         assert (music_file.artist, music_file.title) == ("", "")
 
-    @pytest.mark.xfail(reason="suffix compared case-sensitively; .FLAC hits ID3-only fallback")
     def test_reads_tags_with_uppercase_extension(self, make_flac):
         music_file = MusicFile(make_flac("TRACK.FLAC", artist="Artist", title="Title"))
         assert (music_file.artist, music_file.title) == ("Artist", "Title")

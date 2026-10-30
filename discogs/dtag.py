@@ -69,7 +69,7 @@ class DTag(MusicFile):
 
     def _get_additional_tags(self) -> None:
         """Extract additional tags (genres, year, cover) that are specific to DTag."""
-        if self.suffix == ".flac":
+        if self.suffix.lower() == ".flac":
             try:
                 audio = FLAC(self.path)
                 if audio.get("genre"):
@@ -81,7 +81,7 @@ class DTag(MusicFile):
             except (FLACNoHeaderError, Exception):
                 pass
 
-        elif self.suffix == ".mp3":
+        elif self.suffix.lower() == ".mp3":
             try:
                 audio = EasyID3(self.path)
                 if audio.get("genre"):
@@ -96,7 +96,7 @@ class DTag(MusicFile):
             except (HeaderNotFoundError, MutagenError, KeyError):
                 pass
 
-        elif self.suffix == ".m4a":
+        elif self.suffix.lower() == ".m4a":
             try:
                 audio = MP4(self.path)
                 if audio.get("\xa9gen"):
@@ -116,13 +116,17 @@ class DTag(MusicFile):
         if self.year_found is False and self.genres_found is False:
             return
 
-        if self.suffix == ".flac":
+        if self.suffix.lower() not in (".flac", ".mp3", ".m4a"):
+            logger.warning(f"Writing tags to {self.suffix} files is not supported.")
+            return
+
+        if self.suffix.lower() == ".flac":
             self._image_flac()
             audio = FLAC(self.path)
-        elif self.suffix == ".mp3":
+        elif self.suffix.lower() == ".mp3":
             self._image_mp3()
             audio = EasyID3(self.path)
-        elif self.suffix == ".m4a":
+        elif self.suffix.lower() == ".m4a":
             self._save_m4a()
             return
 
@@ -221,68 +225,68 @@ class DTag(MusicFile):
                     _update_image(self.path, requests.get(self.image).content)
                     self.cover_updated = True
 
-    def search(self, retry: int = 3) -> bool | None:
-        retry -= 1
+    def search(self, retry: int = 3) -> bool:
+        """Search Discogs for this track; return True if a match was found."""
         # check if track has required tags for searching
-        if self.artist == "" and self.title == "":
+        if self.artist == "" or self.title == "":
             logger.error(
                 "Track does not have the required tags for searching on Discogs."
             )
             return False
 
         logger.info(f'Searching for "{self.title} {self.artist}" on Discogs...')
-        # discogs api limit: 60/1minute
-        # retry option added
-        time.sleep(0.5)
-        try:
-            # Use original code without timeout modification
-            res = self.ds.search(type="master", artist=self.artist, track=self.title)
+        results = []
+        for attempt in range(1, retry + 1):
+            # discogs api limit: 60/1minute
+            time.sleep(0.5)
+            try:
+                res = self.ds.search(type="master", artist=self.artist, track=self.title)
+                # Only the first page: iterating res would fetch every page
+                results = res.page(1) if res.count > 0 else []
+                break
+            except HTTPError:
+                if attempt == retry:
+                    logger.error(f"Too many API calls, skipping {self}")
+                    return False
+                logger.error(
+                    f"Too many API calls. {retry - attempt} retries left, next retry in 5 sec."
+                )
+                time.sleep(5)
 
-            local_string = f"{self.title} {self.artist}"
-            discogs_list = []
-            if res.count > 0:
-                for i, track in enumerate(res):
-                    d_artist = ""
-                    if track.data.get("artist"):
-                        d_artist = d_artist["artist"][0]["name"]
-                    d_title = track.title
+        if not results:
+            logger.warning("Not Found on Discogs.")
+            return False
 
-                    # create string for comparison
-                    discogs_string = f"{d_title} {d_artist}"
+        local_string = f"{self.title} {self.artist}"
+        discogs_list = []
+        for i, track in enumerate(results):
+            d_artist = ""
+            if track.data.get("artist"):
+                d_artist = track.data["artist"][0]["name"]
+            d_title = track.title
 
-                    # append to list
-                    discogs_list.append({"index": i, "str": discogs_string})
+            # create string for comparison
+            discogs_string = f"{d_title} {d_artist}"
 
-                # get best match from list
-                best_one = process.extractBests(local_string, discogs_list, limit=1)[0][
-                    0
-                ]["index"]
+            # append to list
+            discogs_list.append({"index": i, "str": discogs_string})
 
-                # check if genre is missing
-                if res[best_one].genres:
-                    genres = ", ".join(sorted([x for x in res[best_one].genres]))
-                    self.genres = genres
-                    self.genres_found = True
+        # get best match from list
+        best = results[process.extractBests(local_string, discogs_list, limit=1)[0][0]["index"]]
 
-                if res[best_one].data["year"]:
-                    year = res[best_one].data["year"]
-                    self.year = str(year)
-                    self.year_found = True
+        # check if genre is missing
+        if best.genres:
+            self.genres = ", ".join(sorted(best.genres))
+            self.genres_found = True
 
-                if res[best_one].images:
-                    self.image = res[best_one].images[0]["uri"]
-            else:
-                logger.warning("Not Found on Discogs.")
-                return False
-        except HTTPError:
-            if retry == 0:
-                logger.error(f"Too many API calls, skipping {self}")
-                return False
-            logger.error(
-                f"Too many API calls. {retry} retries left, next retry in 5 sec."
-            )
-            time.sleep(5)
-            self.search(retry=retry)
+        if best.data.get("year"):
+            self.year = str(best.data["year"])
+            self.year_found = True
+
+        if best.images:
+            self.image = best.images[0]["uri"]
+
+        return True
 
 
 def clean(string: str) -> str:

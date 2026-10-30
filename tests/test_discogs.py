@@ -137,7 +137,6 @@ class TestDTagSearch:
 
         assert tag.search() is False
 
-    @pytest.mark.xfail(raises=TypeError, reason="d_artist indexes the empty string, not track.data")
     def test_handles_results_carrying_an_artist_field(self, make_mp3, no_sleep):
         path = make_mp3(artist="Artist", title="Title")
         results = FakeResults([master(artist=[{"name": "Artist"}])])
@@ -147,7 +146,6 @@ class TestDTagSearch:
 
         assert tag.year_found
 
-    @pytest.mark.xfail(reason="recursive retry result is dropped, so exhausted retries return None (= 'found')")
     def test_exhausted_retries_are_not_reported_as_found(self, make_mp3, no_sleep):
         path = make_mp3(artist="Artist", title="Title")
         ds = FakeDiscogs(HTTPError("rate limited", 429))
@@ -164,7 +162,6 @@ class TestDTagSearch:
         assert tag.search() is False
         assert ds.calls == []
 
-    @pytest.mark.xfail(reason="enumerate(res) walks every page of the paginated results")
     def test_only_fetches_first_page_of_results(self, make_mp3, no_sleep):
         path = make_mp3(artist="Artist", title="Title")
         results = FakeResults([master(title=f"Other {i}") for i in range(150)])
@@ -239,7 +236,6 @@ class TestDTagSave:
 
         assert FLAC(path).pictures[0].data == b"\xff\xd8jpeg"
 
-    @pytest.mark.xfail(raises=UnboundLocalError, reason="save() has no branch for .ogg/.wav")
     def test_unsupported_format_does_not_crash(self, tmp_path):
         path = tmp_path / "track.ogg"
         path.write_bytes(b"not really ogg")
