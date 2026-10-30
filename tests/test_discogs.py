@@ -171,6 +171,19 @@ class TestDTagSearch:
 
         assert results.pages_fetched == {1}
 
+    def test_match_without_year_still_sets_genres(self, make_mp3, no_sleep):
+        path = make_mp3(artist="Artist", title="Title")
+        tag = DTag(path, path.name, make_config(), FakeDiscogs(FakeResults([master(year=None)])))
+
+        assert tag.search() is True
+        assert tag.genres_found and not tag.year_found
+
+    def test_zero_retries_returns_false(self, make_mp3, no_sleep):
+        path = make_mp3(artist="Artist", title="Title")
+        tag = DTag(path, path.name, make_config(), FakeDiscogs(FakeResults([master()])))
+
+        assert tag.search(retry=0) is False
+
 
 class TestDTagSave:
     def found(self, path, config, genres="House", year="1997"):
@@ -236,6 +249,15 @@ class TestDTagSave:
 
         assert FLAC(path).pictures[0].data == b"\xff\xd8jpeg"
 
+    def test_uppercase_extension_is_read_and_saved(self, make_mp3):
+        path = make_mp3("TRACK.MP3", artist="A", title="T", genre="Rock")
+        tag = self.found(path, make_config(overwrite_genre=True))
+        assert tag.local_genres == "Rock"
+
+        tag.save()
+
+        assert EasyID3(path)["genre"] == ["House"]
+
     def test_unsupported_format_does_not_crash(self, tmp_path):
         path = tmp_path / "track.ogg"
         path.write_bytes(b"not really ogg")
@@ -252,6 +274,19 @@ class TestUpdateTagsFromDiscogs:
 
         update_tags_from_discogs(tmp_path, make_config(embed_cover=False), ds)
 
+        assert EasyID3(path)["genre"] == ["Electronic, House"]
+
+    def test_scans_uppercase_extensions_and_skips_directories(
+        self, tmp_path, make_mp3, monkeypatch, no_sleep
+    ):
+        monkeypatch.setattr("builtins.input", lambda *_: "")
+        (tmp_path / "folder.mp3").mkdir()
+        path = make_mp3("LOUD.MP3", artist="Artist", title="Title")
+        ds = FakeDiscogs(FakeResults([master()]))
+
+        update_tags_from_discogs(tmp_path, make_config(embed_cover=False), ds)
+
+        assert len(ds.calls) == 1
         assert EasyID3(path)["genre"] == ["Electronic, House"]
 
     def test_rename_option_still_saves_tags(self, tmp_path, make_mp3, monkeypatch, no_sleep):

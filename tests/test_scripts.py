@@ -6,7 +6,9 @@ from types import SimpleNamespace
 
 import pytest
 
+import main
 import scripts.local_to_spotify as local_to_spotify
+import scripts.local_to_ytmusic as local_to_ytmusic
 from logger import FileLogger
 from scripts.spotify_to_ytmusic import process_tracks as spotify_to_ytmusic
 from scripts.ytmusic_to_spotify import process_tracks as ytmusic_to_spotify
@@ -84,6 +86,35 @@ class TestLocalToSpotify:
         assert sp.saved == ["t1"]
 
 
+class TestLocalToYTMusic:
+    @pytest.fixture
+    def run(self, monkeypatch, tmp_path, no_sleep):
+        def _run(ytm, playlist_id="pl"):
+            monkeypatch.setattr(local_to_ytmusic, "setup_ytmusic", lambda: ytm)
+            monkeypatch.setattr(local_to_ytmusic, "select_ytmusic_playlist", lambda *_: playlist_id)
+            monkeypatch.setattr(
+                local_to_ytmusic,
+                "get_music_files",
+                lambda _: [SimpleNamespace(title="Song", artist="Artist", path=Path("a.mp3"))],
+            )
+            monkeypatch.setattr("builtins.input", lambda *_: "")
+            local_to_ytmusic.main(tmp_path)
+
+        return _run
+
+    def test_adds_new_track(self, run):
+        ytm = FakeYTMusic(search_results=[yt_track("v1")])
+        run(ytm)
+        assert ytm.added == [("pl", ["v1"])]
+
+    def test_skips_track_beyond_first_100_of_playlist(self, run):
+        ytm = FakeYTMusic(
+            playlist=[yt_track(f"v{i}") for i in range(150)], search_results=[yt_track("v120")]
+        )
+        run(ytm)
+        assert ytm.added == []
+
+
 def test_file_loggers_write_only_to_their_own_file(tmp_path):
     first, second = tmp_path / "first.log", tmp_path / "second.log"
     FileLogger(first)
@@ -108,3 +139,51 @@ def test_menu_loads_without_spotify_or_ytmusic_config(tmp_path):
     )
 
     assert result.returncode == 0, result.stderr
+
+
+def test_file_logger_created_twice_writes_each_line_once(tmp_path):
+    log_file = tmp_path / "same.log"
+    FileLogger(log_file)
+    FileLogger(log_file).info("hello")
+
+    assert log_file.read_text().count("hello") == 1
+
+
+class TestMainMenu:
+    @pytest.fixture
+    def run(self, monkeypatch, tmp_path):
+        """Run main() choosing `action`, from a dir whose config.toml is `config`."""
+        calls = {}
+        monkeypatch.setattr(main, "update_tags_from_discogs", lambda *a: calls.setdefault("discogs", a))
+        monkeypatch.setattr(main, "download_from_soulseek", lambda: calls.setdefault("soulseek", ()))
+
+        def _run(action, config, *argv):
+            if config is not None:
+                (tmp_path / "config.toml").write_text(config)
+            monkeypatch.chdir(tmp_path)
+            monkeypatch.setattr(sys, "argv", ["music-sync", *argv])
+            monkeypatch.setattr(main.inquirer, "prompt", lambda _: {"action": action})
+            main.main()
+            return calls
+
+        return _run
+
+    def test_soulseek_runs_without_other_sections(self, run):
+        calls = run("soulseek_download", '[soulseek]\nhost = "h"\napi_key = "k"\n')
+        assert "soulseek" in calls
+
+    def test_discogs_action_loads_discogs_config(self, run, tmp_path):
+        music = tmp_path / "music"
+        music.mkdir()
+        config = (REPO_ROOT / "config.toml.example").read_text().split("[spotify]")[0]
+
+        calls = run("discogs_update", config.replace("your_token", "abc"), "--path", str(music))
+
+        media_path, discogs_config, client = calls["discogs"]
+        assert media_path == music.resolve()
+        assert discogs_config.token == "abc"
+        assert client is not None
+
+    def test_missing_config_exits(self, run):
+        with pytest.raises(SystemExit):
+            run("soulseek_download", None)
