@@ -169,6 +169,8 @@ uv run pytest
 Tests run offline against in-memory fakes of the Spotify, YouTube Music, Discogs and slskd clients, in a temporary working directory, so they never touch your `config.toml`, tokens or music files.
 Known bugs are covered by `xfail(strict=True)` tests: once a fix lands, the test XPASSes and fails the run, telling you to remove its marker.
 
+Lint and format with `uv run ruff check .` and `uv run ruff format .`. CI runs both, plus the tests on Python 3.11 and 3.13, on every push to `main` and every pull request.
+
 ## TODO
 
 ### Spotify (🟢) Improvements
