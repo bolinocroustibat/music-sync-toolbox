@@ -4,6 +4,7 @@ from pathlib import Path
 from ytmusicapi import YTMusic
 
 from logger import FileLogger
+from scripts.playlist_sync import SyncMemory, filter_already_synced
 from spotify import (
     Config as SpotifyConfig,
 )
@@ -22,6 +23,9 @@ from ytmusic import (
 from ytmusic import (
     add_track_to_ytmusic,
     setup_ytmusic,
+)
+from ytmusic import (
+    get_playlist_track_details as get_ytmusic_playlist_track_details,
 )
 from ytmusic import (
     get_playlist_track_ids as get_ytmusic_playlist_track_ids,
@@ -44,6 +48,7 @@ def process_tracks(
     tracks: list[dict],
     existing_tracks: set[str],
     ytmusic_playlist_id: str,
+    memory: SyncMemory | None = None,
 ) -> tuple[int, int]:
     """Process all tracks and return counts of added and skipped tracks"""
     tracks_added = 0
@@ -64,6 +69,8 @@ def process_tracks(
             if video_id:
                 if video_id in existing_tracks:
                     logger.warning("Track already exists in YouTube Music playlist - skipping")
+                    if memory:
+                        memory.remember(track, video_id)
                     tracks_skipped += 1
                     continue
 
@@ -71,6 +78,9 @@ def process_tracks(
                     ytm, video_id, ytmusic_playlist_id, retry_delay
                 )
                 if success:
+                    existing_tracks.add(video_id)
+                    if memory:
+                        memory.remember(track, video_id)
                     tracks_added += 1
                 else:
                     tracks_skipped += 1
@@ -104,11 +114,24 @@ def main() -> None:
     # Get existing tracks in YouTube Music playlist
     existing_tracks = get_ytmusic_playlist_track_ids(ytm, ytmusic_playlist_id)
 
+    # Leave out tracks synced by a previous run
+    memory = SyncMemory(ytmusic_playlist_id)
+    destination_tracks = get_ytmusic_playlist_track_details(
+        ytm, ytmusic_playlist_id, allow_empty=True
+    )
+    tracks, already_synced = filter_already_synced(tracks, destination_tracks, memory)
+    logger.info(
+        f"{already_synced} tracks already in the YouTube Music playlist, {len(tracks)} to sync"
+    )
+
     # Process tracks
-    tracks_added, tracks_skipped = process_tracks(ytm, tracks, existing_tracks, ytmusic_playlist_id)
+    tracks_added, tracks_skipped = process_tracks(
+        ytm, tracks, existing_tracks, ytmusic_playlist_id, memory
+    )
 
     # Print summary
     logger.info("\nSummary:")
+    logger.info(f"Tracks already synced: {already_synced}")
     logger.success(f"Tracks added to YouTube Music: {tracks_added}")
     logger.warning(f"Tracks skipped: {tracks_skipped}")
 

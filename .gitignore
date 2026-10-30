@@ -191,3 +191,6 @@ config.toml
 .spotify_token_cache
 **/oauth.json
 **/browser.json
+
+# Playlist sync: remembered matches between source and destination tracks
+scripts/.playlist_sync_memory.json

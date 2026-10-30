@@ -4,11 +4,15 @@ from pathlib import Path
 import spotipy
 
 from logger import FileLogger
+from scripts.playlist_sync import SyncMemory, filter_already_synced
 from spotify import (
     Config as SpotifyConfig,
 )
 from spotify import (
     add_track as add_track_to_spotify,
+)
+from spotify import (
+    get_playlist_track_details as get_spotify_playlist_track_details,
 )
 from spotify import (
     get_playlist_track_ids as get_spotify_playlist_track_ids,
@@ -43,6 +47,7 @@ def process_tracks(
     tracks: list[dict],
     existing_tracks: set[str],
     spotify_playlist_id: str,
+    memory: SyncMemory | None = None,
 ) -> tuple[int, int]:
     """Process all tracks and return counts of added and skipped tracks"""
     tracks_added = 0
@@ -102,6 +107,8 @@ def process_tracks(
         if track_id:
             if track_id in existing_tracks:
                 logger.warning("Track already exists in Spotify playlist - skipping")
+                if memory:
+                    memory.remember(track, track_id)
                 tracks_skipped += 1
                 continue
 
@@ -109,6 +116,9 @@ def process_tracks(
                 sp, track_id, spotify_playlist_id, retry_delay
             )
             if success:
+                existing_tracks.add(track_id)
+                if memory:
+                    memory.remember(track, track_id)
                 tracks_added += 1
             else:
                 tracks_skipped += 1
@@ -140,11 +150,22 @@ def main() -> None:
     # Get existing tracks in Spotify playlist
     existing_tracks = get_spotify_playlist_track_ids(sp, spotify_playlist_id)
 
+    # Leave out tracks synced by a previous run
+    memory = SyncMemory(spotify_playlist_id)
+    destination_tracks = get_spotify_playlist_track_details(
+        sp, spotify_playlist_id, allow_empty=True
+    )
+    tracks, already_synced = filter_already_synced(tracks, destination_tracks, memory)
+    logger.info(f"{already_synced} tracks already in the Spotify playlist, {len(tracks)} to sync")
+
     # Process tracks
-    tracks_added, tracks_skipped = process_tracks(sp, tracks, existing_tracks, spotify_playlist_id)
+    tracks_added, tracks_skipped = process_tracks(
+        sp, tracks, existing_tracks, spotify_playlist_id, memory
+    )
 
     # Print summary
     logger.info("\nSummary:")
+    logger.info(f"Tracks already synced: {already_synced}")
     logger.success(f"Tracks added to Spotify: {tracks_added}")
     logger.warning(f"Tracks skipped: {tracks_skipped}")
 
