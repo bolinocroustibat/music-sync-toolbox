@@ -31,7 +31,7 @@ def list_user_playlists(ytm: YTMusic) -> list[YTMusicPlaylistInfo]:
             playlist_info: YTMusicPlaylistInfo = {
                 "name": playlist["title"],
                 "id": playlist["playlistId"],
-                "track_count": playlist["count"],
+                "track_count": playlist.get("count") or 0,
             }
             user_playlists.append(playlist_info)
 
@@ -41,9 +41,7 @@ def list_user_playlists(ytm: YTMusic) -> list[YTMusicPlaylistInfo]:
         return user_playlists
 
     except KeyError as e:
-        logger.error(f"Error fetching playlists: Missing key '{e}' in OAuth token")
-        logger.error("This usually means the OAuth token is expired or invalid.")
-        logger.info("Try regenerating your OAuth token by running: uv run ytmusicapi oauth")
+        logger.error(f"Error fetching playlists: Missing key {e} in YouTube Music response")
         return []
     except Exception as e:
         logger.error(f"Error fetching playlists: {e}")

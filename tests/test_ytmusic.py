@@ -59,6 +59,12 @@ class TestListUserPlaylists:
         )
         assert len(list_user_playlists(ytm)) == 41  # + Liked Music
 
+    def test_playlist_without_count(self):
+        # e.g. the "Episodes for Later" podcast playlist has no "count" key
+        ytm = FakeYTMusic(library=[{"title": "Episodes for Later", "playlistId": "SE"}])
+        se = next(p for p in list_user_playlists(ytm) if p["id"] == "SE")
+        assert se["track_count"] == 0
+
 
 class TestSearchTrack:
     def test_formats_and_caps_matches(self):
