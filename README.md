@@ -50,6 +50,7 @@ Pass the folder that contains your audio files on the command line with `--path`
 
 ### Discogs Setup
 For the discogs access token, you can create one [here](https://www.discogs.com/settings/developers).
+See [docs/discogs.md](docs/discogs.md) for what the tag updater writes and why.
 
 ### Spotify Setup
 1. Create an application in your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
@@ -171,7 +172,7 @@ Known bugs are covered by `xfail(strict=True)` tests: once a fix lands, the test
 ## TODO
 
 ### Spotify (🟢) Improvements
-- In `spotify/add_tracks.py`: Compare Spotify matches with local files BEFORE asking user for match selection
+- In `scripts/local_to_spotify.py`: Compare Spotify matches with local files BEFORE asking user for match selection
   - This will help identify the best match automatically
   - Only ask user if no exact match is found
 
