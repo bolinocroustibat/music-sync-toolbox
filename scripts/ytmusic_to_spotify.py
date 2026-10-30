@@ -76,15 +76,9 @@ def process_tracks(
                 choice = "1"
 
             if choice.isdigit() and 1 <= int(choice) <= len(matches):
-                track_id = matches[int(choice) - 1]["id"]
-                track_info = sp.track(track_id)
-                if not track_info:
-                    logger.error("Could not get track details from Spotify")
-                    return None
-                logger.success(
-                    f'Selected from Spotify: "{track_info["name"]} - {track_info["artists"][0]["name"]}"'
-                )
-                return track_id
+                match = matches[int(choice) - 1]
+                logger.success(f'Selected from Spotify: "{match["name"]} - {match["artist"]}"')
+                return match["id"]
 
             logger.warning("Invalid choice - track skipped")
             return None

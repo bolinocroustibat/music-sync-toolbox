@@ -73,7 +73,7 @@ class TestSelectMatch:
     )
     def test_choice(self, answer, expected, answer_input):
         answer_input(answer)
-        assert select_match(FakeSpotify(), self.matches) == expected
+        assert select_match(self.matches) == expected
 
 
 class TestAddTrack:
