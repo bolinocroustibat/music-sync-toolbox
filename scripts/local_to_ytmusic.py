@@ -21,11 +21,12 @@ from ytmusic import (
 from logger import FileLogger
 from local_files import get_music_files, MusicFile
 
-config = YTMusicConfig()
 logger = FileLogger(Path("scripts") / "local_to_ytmusic.log")
 
 
 def main(media_path: Path) -> None:
+    config = YTMusicConfig()
+
     # Initialize YouTube Music client
     ytm = setup_ytmusic()
 

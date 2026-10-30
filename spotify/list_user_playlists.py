@@ -29,13 +29,15 @@ def list_user_playlists(sp: spotipy.Spotify) -> list[SpotifyPlaylistInfo]:
         results = sp.current_user_playlists()
         user_playlists: list[SpotifyPlaylistInfo] = []
 
-        for playlist in results["items"]:
-            playlist_info: SpotifyPlaylistInfo = {
-                "name": playlist["name"],
-                "id": playlist["id"],
-                "track_count": playlist["tracks"]["total"],
-            }
-            user_playlists.append(playlist_info)
+        while results:
+            for playlist in results["items"]:
+                playlist_info: SpotifyPlaylistInfo = {
+                    "name": playlist["name"],
+                    "id": playlist["id"],
+                    "track_count": playlist["tracks"]["total"],
+                }
+                user_playlists.append(playlist_info)
+            results = sp.next(results) if results["next"] else None
 
         # Sort playlists alphabetically by name (case-insensitive)
         user_playlists.sort(key=lambda x: x["name"].lower())

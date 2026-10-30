@@ -28,9 +28,6 @@ from logger import FileLogger
 
 logger = FileLogger(Path("scripts") / "ytmusic_to_spotify.log")
 
-spotify_config = SpotifyConfig()
-ytmusic_config = YTMusicConfig()
-
 
 def process_tracks(
     sp: spotipy.Spotify,
@@ -131,6 +128,9 @@ def process_tracks(
 
 
 def main() -> None:
+    spotify_config = SpotifyConfig()
+    ytmusic_config = YTMusicConfig()
+
     # Initialize YouTube Music client
     ytm = setup_ytmusic()
 

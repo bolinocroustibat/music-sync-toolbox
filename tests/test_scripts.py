@@ -78,14 +78,12 @@ class TestLocalToSpotify:
         run(sp, "pl")
         assert sp.added == []
 
-    @pytest.mark.xfail(reason="existing tracks fetched via playlist_items, which rejects 'liked'")
     def test_liked_songs_target(self, run):
         sp = FakeSpotify(search_results=[hit("t1")])
         run(sp, "liked")
         assert sp.saved == ["t1"]
 
 
-@pytest.mark.xfail(reason="all FileLoggers share the 'discogs_tag' logger, so handlers stack")
 def test_file_loggers_write_only_to_their_own_file(tmp_path):
     first, second = tmp_path / "first.log", tmp_path / "second.log"
     FileLogger(first)
@@ -94,7 +92,6 @@ def test_file_loggers_write_only_to_their_own_file(tmp_path):
     assert "only for second" not in first.read_text()
 
 
-@pytest.mark.xfail(reason="script modules build SpotifyConfig/YTMusicConfig at import time")
 def test_menu_loads_without_spotify_or_ytmusic_config(tmp_path):
     (tmp_path / "config.toml").write_text(
         (REPO_ROOT / "config.toml.example").read_text().split("[spotify]")[0]
