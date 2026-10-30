@@ -26,11 +26,13 @@ class TestGetPlaylistTrackIds:
 class TestGetPlaylistTrackDetails:
     def test_returns_title_and_first_artist(self):
         ytm = FakeYTMusic(playlist=[yt_track("v1", "One", "A"), yt_track("v2", "Two", artist=None)])
-        assert get_playlist_track_details(ytm, "pl") == [{"name": "One", "artist": "A"}]
+        assert get_playlist_track_details(ytm, "pl") == [{"id": "v1", "name": "One", "artist": "A"}]
 
     def test_reads_liked_music(self):
         ytm = FakeYTMusic(liked=[yt_track("v1", "Liked", "A")])
-        assert get_playlist_track_details(ytm, "LM") == [{"name": "Liked", "artist": "A"}]
+        assert get_playlist_track_details(ytm, "LM") == [
+            {"id": "v1", "name": "Liked", "artist": "A"}
+        ]
 
     def test_empty_playlist_exits(self):
         with pytest.raises(SystemExit):

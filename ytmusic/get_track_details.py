@@ -5,19 +5,22 @@ from ytmusicapi import YTMusic
 from ytmusic.logger import logger
 
 
-def get_playlist_track_details(ytm: YTMusic, ytmusic_playlist_id: str) -> list[dict]:
+def get_playlist_track_details(
+    ytm: YTMusic, ytmusic_playlist_id: str, allow_empty: bool = False
+) -> list[dict]:
     """
     Get track details (name, artist) from a YouTube Music playlist or Liked Music.
 
     Args:
         ytm: Authenticated YTMusic client instance.
         ytmusic_playlist_id: Playlist ID or "LM" for Liked Music.
+        allow_empty: Return an empty list instead of exiting when the playlist has no tracks.
 
     Returns:
-        list[dict]: List of tracks, each with "name" and "artist" keys.
+        list[dict]: List of tracks, each with "id" (video ID), "name" and "artist" keys.
 
     Raises:
-        SystemExit: If fetching fails or no tracks are found.
+        SystemExit: If fetching fails, or no tracks are found and allow_empty is False.
 
     Notes:
         - Exits if no tracks are found or an error occurs.
@@ -34,6 +37,7 @@ def get_playlist_track_details(ytm: YTMusic, ytmusic_playlist_id: str) -> list[d
                     continue
                 tracks.append(
                     {
+                        "id": track.get("videoId"),
                         "name": track["title"],
                         "artist": track["artists"][0]["name"],
                     }
@@ -46,6 +50,7 @@ def get_playlist_track_details(ytm: YTMusic, ytmusic_playlist_id: str) -> list[d
                     continue
                 tracks.append(
                     {
+                        "id": track.get("videoId"),
                         "name": track["title"],
                         "artist": track["artists"][0]["name"],
                     }
@@ -54,7 +59,7 @@ def get_playlist_track_details(ytm: YTMusic, ytmusic_playlist_id: str) -> list[d
         logger.error(f"Error fetching YouTube Music playlist: {e}")
         sys.exit(1)
 
-    if not tracks:
+    if not tracks and not allow_empty:
         logger.warning("No tracks found in YouTube Music playlist")
         sys.exit(1)
 

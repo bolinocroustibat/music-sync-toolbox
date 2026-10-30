@@ -41,7 +41,7 @@ class TestGetPlaylistTrackDetails:
                 spotify_item("t3", name=None),
             ]
         )
-        assert get_playlist_track_details(sp, "pl") == [{"name": "One", "artist": "A"}]
+        assert get_playlist_track_details(sp, "pl") == [{"id": "t1", "name": "One", "artist": "A"}]
 
     def test_empty_playlist_exits(self):
         with pytest.raises(SystemExit):

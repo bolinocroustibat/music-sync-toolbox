@@ -5,7 +5,9 @@ import spotipy
 from spotify.logger import logger
 
 
-def get_playlist_track_details(sp: spotipy.Spotify, spotify_playlist_id: str) -> list[dict]:
+def get_playlist_track_details(
+    sp: spotipy.Spotify, spotify_playlist_id: str, allow_empty: bool = False
+) -> list[dict]:
     """Extract track details (name and artist) from a Spotify playlist.
 
     Fetches all tracks from a Spotify playlist and extracts their basic metadata
@@ -15,15 +17,17 @@ def get_playlist_track_details(sp: spotipy.Spotify, spotify_playlist_id: str) ->
     Args:
         sp: Authenticated Spotify client instance
         spotify_playlist_id: Spotify playlist ID or "liked" for Liked Songs
+        allow_empty: Return an empty list instead of exiting when the playlist has no tracks
 
     Returns:
         List of dictionaries, each containing:
+            - id: Spotify track ID (None for local files)
             - name: Track title
             - artist: Primary artist name
 
     Raises:
         SystemExit: If there's an error fetching the playlist or if no tracks
-                   are found in the playlist
+                   are found in the playlist and allow_empty is False
 
     Note:
         - Handles pagination automatically for large playlists
@@ -44,7 +48,13 @@ def get_playlist_track_details(sp: spotipy.Spotify, spotify_playlist_id: str) ->
                     track = item["track"]
                     if not track.get("name") or not track.get("artists"):
                         continue
-                    tracks.append({"name": track["name"], "artist": track["artists"][0]["name"]})
+                    tracks.append(
+                        {
+                            "id": track.get("id"),
+                            "name": track["name"],
+                            "artist": track["artists"][0]["name"],
+                        }
+                    )
                 if results["next"]:
                     results = sp.next(results)
                 else:
@@ -59,7 +69,13 @@ def get_playlist_track_details(sp: spotipy.Spotify, spotify_playlist_id: str) ->
                     track = item["track"]
                     if not track.get("name") or not track.get("artists"):
                         continue
-                    tracks.append({"name": track["name"], "artist": track["artists"][0]["name"]})
+                    tracks.append(
+                        {
+                            "id": track.get("id"),
+                            "name": track["name"],
+                            "artist": track["artists"][0]["name"],
+                        }
+                    )
                 if results["next"]:
                     results = sp.next(results)
                 else:
@@ -68,7 +84,7 @@ def get_playlist_track_details(sp: spotipy.Spotify, spotify_playlist_id: str) ->
         logger.error(f"Error fetching Spotify playlist: {e}")
         sys.exit(1)
 
-    if not tracks:
+    if not tracks and not allow_empty:
         logger.warning("No tracks found in Spotify playlist")
         sys.exit(1)
 

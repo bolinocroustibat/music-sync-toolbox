@@ -29,8 +29,9 @@ class TestYTMusicToSpotify:
 
         added, skipped = ytmusic_to_spotify(sp, self.tracks, set(), "pl")
 
-        assert (added, skipped) == (3, 0)
-        assert sp.added == [("pl", ["t1"])] * 3
+        # Every track matched t1: it is added once, then recognized as already there
+        assert (added, skipped) == (1, 2)
+        assert sp.added == [("pl", ["t1"])]
 
     def test_skips_tracks_already_in_playlist(self, answer_input, no_sleep):
         sp = FakeSpotify(search_results=[hit("t1")])
