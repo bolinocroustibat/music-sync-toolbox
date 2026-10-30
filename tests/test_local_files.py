@@ -77,7 +77,6 @@ class TestRenameFile:
         assert rename_file(music_file, confirm=False) == (False, True)
         assert music_file.path.exists()
 
-    @pytest.mark.xfail(reason="rename_file does not update music_file.path")
     def test_updates_path_on_the_music_file(self, tmp_path, make_mp3):
         music_file = MusicFile(make_mp3("old.mp3", artist="A", title="T"))
 

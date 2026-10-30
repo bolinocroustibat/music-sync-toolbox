@@ -82,18 +82,18 @@ def update_tags_from_discogs(directory: Path, config=None, ds=None) -> None:
                 + f"File: {tag_file.original_filename}"
             )
 
-            # Rename file
-            if config.rename_file and tag_file.artist and tag_file.title:
-                was_renamed, was_skipped = rename_file(tag_file, confirm=False)
-                if was_renamed:
-                    renamed += 1
-
             # Search on Discogs and update
             if tag_file.search() is None:
                 tag_file.save()
                 found += 1
             else:
                 not_found += 1
+
+            # Rename file, once its tags are saved
+            if config.rename_file and tag_file.artist and tag_file.title:
+                was_renamed, was_skipped = rename_file(tag_file, confirm=False)
+                if was_renamed:
+                    renamed += 1
 
             # Print file results info
             if tag_file.genres_updated:
