@@ -77,7 +77,9 @@ class FakeSpotify:
 
     def playlist_remove_all_occurrences_of_items(self, playlist_id, items, snapshot_id=None):
         ids = {_track_id(i) for i in items}
-        self.playlist = [it for it in self.playlist if not it["track"] or it["track"]["id"] not in ids]
+        self.playlist = [
+            it for it in self.playlist if not it["track"] or it["track"]["id"] not in ids
+        ]
 
     def playlist_remove_specific_occurrences_of_items(self, playlist_id, items, snapshot_id=None):
         # Spotify silently ignores "positions" and removes every occurrence
@@ -120,10 +122,18 @@ class FakeYTMusic:
 
     def get_playlist(self, playlist_id, limit=100, **_):
         tracks = self.liked if playlist_id == "LM" else self.playlist
-        return {"title": "My playlist", "trackCount": len(tracks), "tracks": self._cap(tracks, limit)}
+        return {
+            "title": "My playlist",
+            "trackCount": len(tracks),
+            "tracks": self._cap(tracks, limit),
+        }
 
     def get_liked_songs(self, limit=100):
-        return {"title": "Liked Music", "trackCount": len(self.liked), "tracks": self._cap(self.liked, limit)}
+        return {
+            "title": "Liked Music",
+            "trackCount": len(self.liked),
+            "tracks": self._cap(self.liked, limit),
+        }
 
     def get_library_playlists(self, limit=25):
         return self._cap(self.library, limit)

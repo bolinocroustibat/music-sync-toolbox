@@ -75,7 +75,9 @@ class TestSearchTrack:
 class TestSelectMatch:
     matches = [{"id": "v1", "name": "A", "artist": "X"}, {"id": "v2", "name": "B", "artist": "Y"}]
 
-    @pytest.mark.parametrize(("answer", "expected"), [("", "v1"), ("2", "v2"), ("s", None), ("7", None)])
+    @pytest.mark.parametrize(
+        ("answer", "expected"), [("", "v1"), ("2", "v2"), ("s", None), ("7", None)]
+    )
     def test_choice(self, answer, expected, answer_input):
         answer_input(answer)
         assert select_match(self.matches) == expected

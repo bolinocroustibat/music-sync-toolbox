@@ -18,9 +18,7 @@ class TrackInstance(TypedDict):
     position: int
 
 
-def find_duplicates(
-    sp: spotipy.Spotify, playlist_id: str
-) -> dict[str, list[TrackInstance]]:
+def find_duplicates(sp: spotipy.Spotify, playlist_id: str) -> dict[str, list[TrackInstance]]:
     """Find duplicate tracks in a playlist"""
     logger.info("Fetching playlist tracks...")
     logger.info(f"Using playlist ID: {playlist_id}")
@@ -53,9 +51,7 @@ def find_duplicates(
         try:
             batch_size = len(results["items"])
             total_tracks += batch_size
-            logger.info(
-                f"Processing batch of {batch_size} tracks (total: {total_tracks})"
-            )
+            logger.info(f"Processing batch of {batch_size} tracks (total: {total_tracks})")
 
             for item in results["items"]:
                 item_position = position
@@ -66,11 +62,7 @@ def find_duplicates(
                     continue
 
                 track_id = track["id"]
-                artist = (
-                    track["artists"][0]["name"]
-                    if track["artists"]
-                    else "Unknown Artist"
-                )
+                artist = track["artists"][0]["name"] if track["artists"] else "Unknown Artist"
                 track_name = f"{track['name']} - {artist}"  # Keep for display purposes
 
                 track_instance: TrackInstance = {
@@ -168,9 +160,7 @@ def main() -> None:
         logger.success("No duplicates found!")
         return
 
-    logger.info(
-        f"\nFound {sum(len(v) - 1 for v in duplicates.values())} duplicate tracks:"
-    )
+    logger.info(f"\nFound {sum(len(v) - 1 for v in duplicates.values())} duplicate tracks:")
     for track_id, instances in duplicates.items():
         # Get the track name from the first instance (they're all the same track)
         track_name = instances[0]["name"]

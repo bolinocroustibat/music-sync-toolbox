@@ -34,9 +34,7 @@ def select_playlist(ytm: YTMusic, playlist_id: str | None = None) -> str:
             if playlist_id == "LM":
                 # Special case for Liked Music
                 try:
-                    ytm.get_liked_songs(
-                        limit=1
-                    )  # Just check if we can access liked songs
+                    ytm.get_liked_songs(limit=1)  # Just check if we can access liked songs
                     logger.success('Using YouTube Music playlist "Liked Music"')
                     return playlist_id
                 except Exception as e:

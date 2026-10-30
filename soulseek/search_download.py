@@ -103,8 +103,7 @@ def check_server_ready(client: SlskdClient) -> None:
     state = client.server.state()
     if not state.get("isLoggedIn"):
         raise RuntimeError(
-            "slskd is not logged in to the Soulseek server. "
-            "Check slskd configuration and network."
+            "slskd is not logged in to the Soulseek server. Check slskd configuration and network."
         )
 
 

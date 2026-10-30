@@ -43,7 +43,9 @@ class FilterMp3ExactBitrateTests(unittest.TestCase):
         self.assertEqual(out[0].file["extension"], "flac")
 
     def test_non_numeric_bitrate_drops_mp3(self) -> None:
-        bad = SearchCandidate("u", {"filename": "x.mp3", "extension": "mp3", "bitRate": "x"}, locked=False)
+        bad = SearchCandidate(
+            "u", {"filename": "x.mp3", "extension": "mp3", "bitRate": "x"}, locked=False
+        )
         out = filter_mp3_exact_bitrate([bad], 320)
         self.assertEqual(out, [])
 

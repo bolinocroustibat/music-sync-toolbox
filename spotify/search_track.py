@@ -44,11 +44,7 @@ def search_track(
 
     try:
         results = sp.search(query, type="track", limit=5)
-        if (
-            not results
-            or not results.get("tracks")
-            or not results["tracks"].get("items")
-        ):
+        if not results or not results.get("tracks") or not results["tracks"].get("items"):
             logger.error("No matches found on Spotify")
             return None
 

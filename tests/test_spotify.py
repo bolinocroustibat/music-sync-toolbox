@@ -69,7 +69,8 @@ class TestSelectMatch:
     matches = [{"id": "t1", "name": "A", "artist": "X"}, {"id": "t2", "name": "B", "artist": "Y"}]
 
     @pytest.mark.parametrize(
-        ("answer", "expected"), [("", "t1"), ("1", "t1"), ("2", "t2"), ("s", None), ("9", None), ("x", None)]
+        ("answer", "expected"),
+        [("", "t1"), ("1", "t1"), ("2", "t2"), ("s", None), ("9", None), ("x", None)],
     )
     def test_choice(self, answer, expected, answer_input):
         answer_input(answer)

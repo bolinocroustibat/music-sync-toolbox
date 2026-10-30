@@ -55,9 +55,7 @@ def process_tracks(
                 choice = "1"
             else:
                 choice = (
-                    input(
-                        "\nSelect match number (1 is default, 's' to skip, 'a' for auto-first): "
-                    )
+                    input("\nSelect match number (1 is default, 's' to skip, 'a' for auto-first): ")
                     .strip()
                     .lower()
                 )
@@ -87,9 +85,7 @@ def process_tracks(
 
         if track_id:
             if track_id in existing_tracks:
-                logger.warning(
-                    "Track already exists in Spotify playlist - skipping"
-                )
+                logger.warning("Track already exists in Spotify playlist - skipping")
                 tracks_skipped += 1
                 continue
 
@@ -129,9 +125,7 @@ def main() -> None:
     existing_tracks = get_spotify_playlist_track_ids(sp, spotify_playlist_id)
 
     # Process tracks
-    tracks_added, tracks_skipped = process_tracks(
-        sp, tracks, existing_tracks, spotify_playlist_id
-    )
+    tracks_added, tracks_skipped = process_tracks(sp, tracks, existing_tracks, spotify_playlist_id)
 
     # Print summary
     logger.info("\nSummary:")

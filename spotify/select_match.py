@@ -17,9 +17,7 @@ def select_match(matches: list[dict]) -> str | None:
         logger.info(f"   Artist: {track['artist']}")
 
     # Let user choose with 1 as default
-    choice = (
-        input("\nSelect match number (1 is default, 's' to skip): ").strip().lower()
-    )
+    choice = input("\nSelect match number (1 is default, 's' to skip): ").strip().lower()
     if choice == "s":
         logger.warning("Track skipped")
         return None

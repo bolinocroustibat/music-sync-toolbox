@@ -194,8 +194,8 @@ Known bugs are covered by `xfail(strict=True)` tests: once a fix lands, the test
                   "year_updated": bool,
                   "cover_updated": bool,
                   "file_renamed": bool,
-                  "new_path": str | None
-              }
+                  "new_path": str | None,
+              },
           }
   ```
 - Benefits:
