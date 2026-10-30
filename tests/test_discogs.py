@@ -342,7 +342,7 @@ class TestDTagSave:
 
 class TestUpdateTagsFromDiscogs:
     def test_tags_every_file(self, tmp_path, make_mp3, monkeypatch, no_sleep):
-        monkeypatch.setattr("builtins.input", lambda *_: "")
+        monkeypatch.setattr("builtins.input", lambda *_: pytest.fail("prompted"))
         path = make_mp3(artist="Artist", title="Title")
         ds = FakeDiscogs(FakeResults([master()]))
 
@@ -351,7 +351,7 @@ class TestUpdateTagsFromDiscogs:
         assert EasyID3(path)["genre"] == ["Electronic, House"]
 
     def test_rename_option_keeps_full_title(self, tmp_path, make_mp3, monkeypatch, no_sleep):
-        monkeypatch.setattr("builtins.input", lambda *_: "")
+        monkeypatch.setattr("builtins.input", lambda *_: pytest.fail("prompted"))
         make_mp3("old.mp3", artist="A & B", title="Hello, Goodbye (Remix)")
         ds = FakeDiscogs(FakeResults([master()]))
 
@@ -362,7 +362,7 @@ class TestUpdateTagsFromDiscogs:
     def test_scans_uppercase_extensions_and_skips_directories(
         self, tmp_path, make_mp3, monkeypatch, no_sleep
     ):
-        monkeypatch.setattr("builtins.input", lambda *_: "")
+        monkeypatch.setattr("builtins.input", lambda *_: pytest.fail("prompted"))
         (tmp_path / "folder.mp3").mkdir()
         path = make_mp3("LOUD.MP3", artist="Artist", title="Title")
         ds = FakeDiscogs(FakeResults([master()]))
@@ -373,7 +373,7 @@ class TestUpdateTagsFromDiscogs:
         assert EasyID3(path)["genre"] == ["Electronic, House"]
 
     def test_rename_option_still_saves_tags(self, tmp_path, make_mp3, monkeypatch, no_sleep):
-        monkeypatch.setattr("builtins.input", lambda *_: "")
+        monkeypatch.setattr("builtins.input", lambda *_: pytest.fail("prompted"))
         make_mp3("old name.mp3", artist="Artist", title="Title")
         ds = FakeDiscogs(FakeResults([master()]))
 
