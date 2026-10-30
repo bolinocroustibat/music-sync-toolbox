@@ -63,10 +63,7 @@ class FakeSpotify:
         return {"tracks": {"items": self.search_results[:limit]}}
 
     def track(self, track_id):
-        for t in self.search_results:
-            if t["id"] == track_id:
-                return t
-        return {"id": track_id, "name": "Song", "artists": [{"name": "Artist"}]}
+        raise AssertionError("search results already hold the name and artist")
 
     # --- writes -------------------------------------------------------------
     def playlist_add_items(self, playlist_id, items, position=None):

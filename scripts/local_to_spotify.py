@@ -52,7 +52,7 @@ def main(media_path: Path) -> None:
             sp, music_file.title, music_file.artist, music_file.path.name
         )
         if matches:
-            track_id = select_spotify_match(sp, matches)
+            track_id = select_spotify_match(matches)
             if track_id:
                 if track_id in existing_tracks:
                     logger.warning(
