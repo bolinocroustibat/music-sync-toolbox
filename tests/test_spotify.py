@@ -116,7 +116,6 @@ class TestListUserPlaylists:
         )
         assert [p["id"] for p in list_user_playlists(sp)] == ["a", "b"]
 
-    @pytest.mark.xfail(reason="only the first page (50) of playlists is fetched")
     def test_returns_all_pages(self):
         sp = FakeSpotify(
             playlists=[{"name": f"p{i}", "id": f"p{i}", "tracks": {"total": 0}} for i in range(70)]

@@ -16,15 +16,17 @@ from spotify import (
     search_track as search_spotify_track,
     select_match as select_spotify_match,
     add_track as add_track_to_spotify,
+    get_playlist_track_ids as get_spotify_playlist_track_ids,
 )
 from logger import FileLogger
 from local_files import get_music_files, MusicFile
 
-config = SpotifyConfig()
 logger = FileLogger(Path("scripts") / "local_to_spotify.log")
 
 
 def main(media_path: Path) -> None:
+    config = SpotifyConfig()
+
     # Initialize Spotify client
     sp = setup_spotify()
 
@@ -47,17 +49,7 @@ def main(media_path: Path) -> None:
     tracks_skipped = 0
 
     # Get existing tracks in playlist
-    logger.info("Fetching existing tracks from playlist...")
-    existing_tracks: set[str] = set()
-    results = sp.playlist_items(playlist_id)
-    while results:
-        for item in results["items"]:
-            if item["track"] and item["track"]["id"]:
-                existing_tracks.add(item["track"]["id"])
-        if results["next"]:
-            results = sp.next(results)
-        else:
-            break
+    existing_tracks = get_spotify_playlist_track_ids(sp, playlist_id)
 
     # Process each music file
     logger.info("\nProcessing files...")
