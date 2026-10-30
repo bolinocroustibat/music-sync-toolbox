@@ -1,5 +1,6 @@
-import spotipy
 import inquirer
+import spotipy
+
 from spotify.list_user_playlists import list_user_playlists
 from spotify.logger import logger
 

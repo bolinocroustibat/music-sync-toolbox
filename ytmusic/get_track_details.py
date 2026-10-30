@@ -1,5 +1,7 @@
-from ytmusicapi import YTMusic
 import sys
+
+from ytmusicapi import YTMusic
+
 from ytmusic.logger import logger
 
 
@@ -21,14 +23,12 @@ def get_playlist_track_details(ytm: YTMusic, ytmusic_playlist_id: str) -> list[d
         - Exits if no tracks are found or an error occurs.
         - Handles both regular playlists and Liked Music.
     """
-    logger.info(
-        f'Fetching tracks from YouTube Music playlist "{ytmusic_playlist_id}"...'
-    )
+    logger.info(f'Fetching tracks from YouTube Music playlist "{ytmusic_playlist_id}"...')
     tracks: list[dict] = []
     try:
         if ytmusic_playlist_id == "LM":
             # Special case for Liked Music
-            results = ytm.get_liked_songs()
+            results = ytm.get_liked_songs(limit=None)
             for track in results["tracks"]:
                 if not track.get("title") or not track.get("artists"):
                     continue
@@ -40,7 +40,7 @@ def get_playlist_track_details(ytm: YTMusic, ytmusic_playlist_id: str) -> list[d
                 )
         else:
             # Regular playlist
-            results = ytm.get_playlist(ytmusic_playlist_id)
+            results = ytm.get_playlist(ytmusic_playlist_id, limit=None)
             for track in results["tracks"]:
                 if not track.get("title") or not track.get("artists"):
                     continue

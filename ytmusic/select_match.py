@@ -27,9 +27,7 @@ def select_match(matches: list[dict], auto_first: bool = False) -> str | None:
     if auto_first:
         choice = "1"
     else:
-        choice = (
-            input("\nSelect match number (1 is default, 's' to skip): ").strip().lower()
-        )
+        choice = input("\nSelect match number (1 is default, 's' to skip): ").strip().lower()
         if choice == "s":
             logger.warning("Track skipped")
             return None
@@ -38,11 +36,9 @@ def select_match(matches: list[dict], auto_first: bool = False) -> str | None:
         choice = "1"
 
     if choice.isdigit() and 1 <= int(choice) <= len(matches):
-        video_id = matches[int(choice) - 1]["id"]
-        logger.success(
-            f'Selected from YouTube Music: "{matches[int(choice) - 1]["name"]} - {matches[int(choice) - 1]["artist"]}"'
-        )
-        return video_id
+        match = matches[int(choice) - 1]
+        logger.success(f'Selected from YouTube Music: "{match["name"]} - {match["artist"]}"')
+        return match["id"]
 
     logger.warning("Invalid choice - track skipped")
     return None

@@ -2,35 +2,41 @@ import sys
 from pathlib import Path
 
 from ytmusicapi import YTMusic
-from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    TextColumn,
-    BarColumn,
-    TaskProgressColumn,
-)
 
+from logger import FileLogger
 from spotify import (
     Config as SpotifyConfig,
-    setup_spotify,
-    select_playlist as select_spotify_playlist,
+)
+from spotify import (
     get_playlist_track_details as get_spotify_playlist_track_details,
+)
+from spotify import (
+    select_playlist as select_spotify_playlist,
+)
+from spotify import (
+    setup_spotify,
 )
 from ytmusic import (
     Config as YTMusicConfig,
-    setup_ytmusic,
-    select_playlist as select_ytmusic_playlist,
-    get_playlist_track_ids as get_ytmusic_playlist_track_ids,
-    search_track as search_ytmusic_track,
-    select_match as select_ytmusic_match,
-    add_track_to_ytmusic,
 )
-from logger import FileLogger
+from ytmusic import (
+    add_track_to_ytmusic,
+    setup_ytmusic,
+)
+from ytmusic import (
+    get_playlist_track_ids as get_ytmusic_playlist_track_ids,
+)
+from ytmusic import (
+    search_track as search_ytmusic_track,
+)
+from ytmusic import (
+    select_match as select_ytmusic_match,
+)
+from ytmusic import (
+    select_playlist as select_ytmusic_playlist,
+)
 
 logger = FileLogger(Path("scripts") / "spotify_to_ytmusic.log")
-
-spotify_config = SpotifyConfig()
-ytmusic_config = YTMusicConfig()
 
 
 def process_tracks(
@@ -46,47 +52,40 @@ def process_tracks(
     retry_delay = 5  # Initial delay in seconds
 
     logger.info("\nProcessing tracks...")
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        transient=True,
-    ) as progress:
-        task = progress.add_task("Processing tracks...", total=len(tracks))
-        for track in tracks:
-            track_name = track["name"]
-            artist_name = track["artist"]
+    # No live progress bar: it would redraw over the match prompts
+    for i, track in enumerate(tracks, 1):
+        logger.info(f"\n[{i}/{len(tracks)}]")
+        track_name = track["name"]
+        artist_name = track["artist"]
 
-            matches = search_ytmusic_track(ytm, track_name, artist_name)
-            if matches:
-                video_id = select_ytmusic_match(matches, auto_first)
-                if video_id:
-                    if video_id in existing_tracks:
-                        logger.warning(
-                            "Track already exists in YouTube Music playlist - skipping"
-                        )
-                        tracks_skipped += 1
-                        progress.advance(task)
-                        continue
+        matches = search_ytmusic_track(ytm, track_name, artist_name)
+        if matches:
+            video_id = select_ytmusic_match(matches, auto_first)
+            if video_id:
+                if video_id in existing_tracks:
+                    logger.warning("Track already exists in YouTube Music playlist - skipping")
+                    tracks_skipped += 1
+                    continue
 
-                    success, retry_delay = add_track_to_ytmusic(
-                        ytm, video_id, ytmusic_playlist_id, retry_delay
-                    )
-                    if success:
-                        tracks_added += 1
-                    else:
-                        tracks_skipped += 1
+                success, retry_delay = add_track_to_ytmusic(
+                    ytm, video_id, ytmusic_playlist_id, retry_delay
+                )
+                if success:
+                    tracks_added += 1
                 else:
                     tracks_skipped += 1
             else:
                 tracks_skipped += 1
-            progress.advance(task)
+        else:
+            tracks_skipped += 1
 
     return tracks_added, tracks_skipped
 
 
 def main() -> None:
+    spotify_config = SpotifyConfig()
+    ytmusic_config = YTMusicConfig()
+
     # Initialize YouTube Music client
     ytm = setup_ytmusic()
 
@@ -106,9 +105,7 @@ def main() -> None:
     existing_tracks = get_ytmusic_playlist_track_ids(ytm, ytmusic_playlist_id)
 
     # Process tracks
-    tracks_added, tracks_skipped = process_tracks(
-        ytm, tracks, existing_tracks, ytmusic_playlist_id
-    )
+    tracks_added, tracks_skipped = process_tracks(ytm, tracks, existing_tracks, ytmusic_playlist_id)
 
     # Print summary
     logger.info("\nSummary:")

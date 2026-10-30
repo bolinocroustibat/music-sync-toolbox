@@ -1,4 +1,5 @@
 from ytmusicapi import YTMusic
+
 from ytmusic.logger import logger
 
 
@@ -14,11 +15,11 @@ def get_playlist_track_ids(ytm: YTMusic, ytmusic_playlist_id: str) -> set[str]:
         set[str]: Set of YouTube Music video IDs.
 
     Notes:
-        - Only regular playlists are supported (not Liked Music).
+        - Works for Liked Music too ("LM").
     """
     logger.info("Fetching existing tracks from YouTube Music playlist...")
     existing_tracks: set[str] = set()
-    results = ytm.get_playlist(ytmusic_playlist_id)
+    results = ytm.get_playlist(ytmusic_playlist_id, limit=None)
     for track in results["tracks"]:
         if track.get("videoId"):
             existing_tracks.add(track["videoId"])

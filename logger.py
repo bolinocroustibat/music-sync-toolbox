@@ -17,8 +17,11 @@ class FileLogger:
 
     def __init__(self, log_file: Path) -> None:
         # logger
-        self.logger = logging.getLogger("discogs_tag")
+        # one logger per file, so messages only land in their own log file
+        self.logger = logging.getLogger(f"music_sync.{log_file}")
         self.logger.setLevel(20)
+        if self.logger.handlers:
+            return
 
         # handler
         five_mbytes = 10**6 * 5

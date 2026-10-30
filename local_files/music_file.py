@@ -1,11 +1,12 @@
 from pathlib import Path
+
+from mutagen._file import File
 from mutagen.easyid3 import EasyID3
 from mutagen.flac import FLAC
+from mutagen.id3._util import ID3NoHeaderError
 from mutagen.mp4 import MP4
 from mutagen.oggvorbis import OggVorbis
 from mutagen.wave import WAVE
-from mutagen._file import File
-from mutagen.id3._util import ID3NoHeaderError
 
 from local_files.logger import logger
 
@@ -56,7 +57,8 @@ class MusicFile:
             - Logs errors if tag reading fails for any format
         """
         # Try format-specific handlers first
-        if self.suffix == ".flac":
+        suffix = self.suffix.lower()
+        if suffix == ".flac":
             try:
                 audio = FLAC(self.path)
                 if audio.get("artist") and audio.get("title"):
@@ -66,7 +68,7 @@ class MusicFile:
             except Exception as e:
                 logger.error(f"Error reading FLAC tags: {e}")
 
-        elif self.suffix == ".mp3":
+        elif suffix == ".mp3":
             # Try EasyID3 first (more reliable for MP3)
             try:
                 tags = EasyID3(self.path)
@@ -82,7 +84,7 @@ class MusicFile:
             except Exception as e:
                 logger.error(f"Error reading MP3 EasyID3 tags: {e}")
 
-        elif self.suffix == ".m4a":
+        elif suffix == ".m4a":
             try:
                 audio = MP4(self.path)
                 if audio.get("\xa9ART") and audio.get("\xa9nam"):
@@ -92,7 +94,7 @@ class MusicFile:
             except Exception as e:
                 logger.error(f"Error reading M4A tags: {e}")
 
-        elif self.suffix == ".ogg":
+        elif suffix == ".ogg":
             try:
                 audio = OggVorbis(self.path)
                 if audio.get("artist") and audio.get("title"):
@@ -102,7 +104,7 @@ class MusicFile:
             except Exception as e:
                 logger.error(f"Error reading OGG tags: {e}")
 
-        elif self.suffix == ".wav":
+        elif suffix == ".wav":
             try:
                 audio = WAVE(self.path)
                 # WAV files typically don't have embedded metadata tags

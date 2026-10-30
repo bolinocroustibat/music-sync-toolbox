@@ -1,5 +1,6 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
+
 from spotify.config import Config
 from spotify.logger import logger
 
@@ -26,7 +27,10 @@ def setup_spotify() -> spotipy.Spotify:
         spotify/.spotify_token_cache for future use.
     """
     config = Config()
-    scope = "playlist-modify-public playlist-modify-private playlist-read-private user-library-read user-library-modify"
+    scope = (
+        "playlist-modify-public playlist-modify-private playlist-read-private "
+        "user-library-read user-library-modify"
+    )
     logger.info("Initializing Spotify client...")
     logger.info(f"Using client_id: {config.client_id}")
     logger.info(f"Using redirect_uri: {config.redirect_uri}")

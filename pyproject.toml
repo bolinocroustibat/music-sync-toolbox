@@ -9,28 +9,62 @@ authors = [
 dependencies = [
     "argcomplete>=3.0.0",
     "discogs-client==2.3.0",
-    "fuzzywuzzy<1.0.0,>=0.18.0",
     "inquirer>=2.10.1",
     "mutagen<2.0.0,>=1.45.1",
     "niquests>=3.18.4",
-    "python-Levenshtein>=0.23.0",
+    "rapidfuzz>=3.13.0",
+    "requests>=2.32.3",
     "rich>=13.7.0",
     "slskd-api>=0.2.3",
     "spotipy>=2.23.0",
     "ytmusicapi>=0.23.0",
 ]
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.11,<4.0"
 license = { text = "MIT" }
 
 [project.scripts]
 music-sync-toolbox = "main:main"
 music-sync = "main:main"
 
-[tool]
-rye = { dev-dependencies = [
-    "ruff>=0.11.8",
-] }
-
 [build-system]
-requires = ["pdm-pep517"]
-build-backend = "pdm.pep517.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+only-include = [
+    "main.py",
+    "logger.py",
+    "discogs",
+    "local_files",
+    "scripts",
+    "soulseek",
+    "spotify",
+    "ytmusic",
+]
+# Never ship logs or credentials that live next to the code
+exclude = ["*.log", "*.json", ".spotify_token_cache"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+xfail_strict = true
+filterwarnings = ["ignore::SyntaxWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+# RUF001: the menu's emoji (➕) are intentional
+ignore = ["RUF001"]
+
+[tool.ruff.lint.per-file-ignores]
+# Class-level match lists in tests are read-only fixtures
+"tests/*" = ["RUF012"]

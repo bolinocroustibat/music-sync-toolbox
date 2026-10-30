@@ -1,35 +1,41 @@
 import sys
 from pathlib import Path
 
-from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    TextColumn,
-    BarColumn,
-    TaskProgressColumn,
-)
 import spotipy
 
+from logger import FileLogger
 from spotify import (
     Config as SpotifyConfig,
+)
+from spotify import (
     add_track as add_track_to_spotify,
-    setup_spotify,
-    select_playlist as select_spotify_playlist,
+)
+from spotify import (
     get_playlist_track_ids as get_spotify_playlist_track_ids,
+)
+from spotify import (
     search_track as search_spotify_track,
+)
+from spotify import (
+    select_playlist as select_spotify_playlist,
+)
+from spotify import (
+    setup_spotify,
 )
 from ytmusic import (
     Config as YTMusicConfig,
-    setup_ytmusic,
-    select_playlist as select_ytmusic_playlist,
+)
+from ytmusic import (
     get_playlist_track_details as get_ytmusic_playlist_track_details,
 )
-from logger import FileLogger
+from ytmusic import (
+    select_playlist as select_ytmusic_playlist,
+)
+from ytmusic import (
+    setup_ytmusic,
+)
 
 logger = FileLogger(Path("scripts") / "ytmusic_to_spotify.log")
-
-spotify_config = SpotifyConfig()
-ytmusic_config = YTMusicConfig()
 
 
 def process_tracks(
@@ -45,92 +51,77 @@ def process_tracks(
     retry_delay = 5  # Initial delay in seconds
 
     logger.info("\nProcessing tracks...")
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        transient=True,
-    ) as progress:
-        task = progress.add_task("Processing tracks...", total=len(tracks))
-        for track in tracks:
-            track_name = track["name"]
-            artist_name = track["artist"]
+    # No live progress bar: it would redraw over the match prompts
+    for i, track in enumerate(tracks, 1):
+        logger.info(f"\n[{i}/{len(tracks)}]")
+        track_name = track["name"]
+        artist_name = track["artist"]
 
-            # Define search function with access to auto_first
-            def search_with_auto_first(
-                sp: spotipy.Spotify, track_name: str, artist_name: str
-            ) -> str | None:
-                nonlocal auto_first, retry_delay
-                matches = search_spotify_track(sp, track_name, artist_name)
-                if not matches:
-                    return None
-
-                # Let user choose with 1 as default
-                if auto_first:
-                    choice = "1"
-                else:
-                    choice = (
-                        input(
-                            "\nSelect match number (1 is default, 's' to skip, 'a' for auto-first): "
-                        )
-                        .strip()
-                        .lower()
-                    )
-                    if choice == "a":
-                        logger.info(
-                            "Auto-first mode enabled - will select first match for all remaining tracks"
-                        )
-                        auto_first = True
-                        choice = "1"
-
-                if choice == "s":
-                    logger.warning("Track skipped")
-                    return None
-
-                if choice == "" or choice == "1":
-                    choice = "1"
-
-                if choice.isdigit() and 1 <= int(choice) <= len(matches):
-                    track_id = matches[int(choice) - 1]["id"]
-                    track_info = sp.track(track_id)
-                    if not track_info:
-                        logger.error("Could not get track details from Spotify")
-                        return None
-                    logger.success(
-                        f'Selected from Spotify: "{track_info["name"]} - {track_info["artists"][0]["name"]}"'
-                    )
-                    return track_id
-
-                logger.warning("Invalid choice - track skipped")
+        # Define search function with access to auto_first
+        def search_with_auto_first(
+            sp: spotipy.Spotify, track_name: str, artist_name: str
+        ) -> str | None:
+            nonlocal auto_first, retry_delay
+            matches = search_spotify_track(sp, track_name, artist_name)
+            if not matches:
                 return None
 
-            track_id = search_with_auto_first(sp, track_name, artist_name)
-
-            if track_id:
-                if track_id in existing_tracks:
-                    logger.warning(
-                        "Track already exists in Spotify playlist - skipping"
-                    )
-                    tracks_skipped += 1
-                    progress.advance(task)
-                    continue
-
-                success, retry_delay = add_track_to_spotify(
-                    sp, track_id, spotify_playlist_id, retry_delay
+            # Let user choose with 1 as default
+            if auto_first:
+                choice = "1"
+            else:
+                choice = (
+                    input("\nSelect match number (1 is default, 's' to skip, 'a' for auto-first): ")
+                    .strip()
+                    .lower()
                 )
-                if success:
-                    tracks_added += 1
-                else:
-                    tracks_skipped += 1
+                if choice == "a":
+                    logger.info(
+                        "Auto-first mode enabled - will select first match for all remaining tracks"
+                    )
+                    auto_first = True
+                    choice = "1"
+
+            if choice == "s":
+                logger.warning("Track skipped")
+                return None
+
+            if choice == "" or choice == "1":
+                choice = "1"
+
+            if choice.isdigit() and 1 <= int(choice) <= len(matches):
+                match = matches[int(choice) - 1]
+                logger.success(f'Selected from Spotify: "{match["name"]} - {match["artist"]}"')
+                return match["id"]
+
+            logger.warning("Invalid choice - track skipped")
+            return None
+
+        track_id = search_with_auto_first(sp, track_name, artist_name)
+
+        if track_id:
+            if track_id in existing_tracks:
+                logger.warning("Track already exists in Spotify playlist - skipping")
+                tracks_skipped += 1
+                continue
+
+            success, retry_delay = add_track_to_spotify(
+                sp, track_id, spotify_playlist_id, retry_delay
+            )
+            if success:
+                tracks_added += 1
             else:
                 tracks_skipped += 1
-            progress.advance(task)
+        else:
+            tracks_skipped += 1
 
     return tracks_added, tracks_skipped
 
 
 def main() -> None:
+    spotify_config = SpotifyConfig()
+    ytmusic_config = YTMusicConfig()
+
     # Initialize YouTube Music client
     ytm = setup_ytmusic()
 
@@ -150,9 +141,7 @@ def main() -> None:
     existing_tracks = get_spotify_playlist_track_ids(sp, spotify_playlist_id)
 
     # Process tracks
-    tracks_added, tracks_skipped = process_tracks(
-        sp, tracks, existing_tracks, spotify_playlist_id
-    )
+    tracks_added, tracks_skipped = process_tracks(sp, tracks, existing_tracks, spotify_playlist_id)
 
     # Print summary
     logger.info("\nSummary:")

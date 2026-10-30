@@ -1,30 +1,34 @@
 import sys
 from pathlib import Path
 
-from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    TextColumn,
-    BarColumn,
-    TaskProgressColumn,
-)
-
+from local_files import MusicFile, get_music_files
+from logger import FileLogger
 from ytmusic import (
     Config as YTMusicConfig,
-    setup_ytmusic,
-    select_playlist as select_ytmusic_playlist,
-    search_track as search_ytmusic_track,
-    select_match as select_ytmusic_match,
-    add_track_to_ytmusic,
 )
-from logger import FileLogger
-from local_files import get_music_files, MusicFile
+from ytmusic import (
+    add_track_to_ytmusic,
+    setup_ytmusic,
+)
+from ytmusic import (
+    get_playlist_track_ids as get_ytmusic_playlist_track_ids,
+)
+from ytmusic import (
+    search_track as search_ytmusic_track,
+)
+from ytmusic import (
+    select_match as select_ytmusic_match,
+)
+from ytmusic import (
+    select_playlist as select_ytmusic_playlist,
+)
 
-config = YTMusicConfig()
 logger = FileLogger(Path("scripts") / "local_to_ytmusic.log")
 
 
 def main(media_path: Path) -> None:
+    config = YTMusicConfig()
+
     # Initialize YouTube Music client
     ytm = setup_ytmusic()
 
@@ -47,48 +51,33 @@ def main(media_path: Path) -> None:
     tracks_skipped = 0
 
     # Get existing tracks in playlist
-    logger.info("Fetching existing tracks from playlist...")
-    existing_tracks: set[str] = set()
-    results = ytm.get_playlist(playlist_id)
-    for track in results["tracks"]:
-        if track.get("videoId"):
-            existing_tracks.add(track["videoId"])
+    existing_tracks = get_ytmusic_playlist_track_ids(ytm, playlist_id)
 
     # Process each music file
     logger.info("\nProcessing files...")
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        transient=True,
-    ) as progress:
-        task = progress.add_task("Processing files...", total=len(music_files))
-        for music_file in music_files:
-            matches = search_ytmusic_track(
-                ytm, music_file.title, music_file.artist, music_file.path.name
-            )
-            if matches:
-                track_id = select_ytmusic_match(matches)
-                if track_id:
-                    if track_id in existing_tracks:
-                        logger.warning(
-                            "Track already exists in YouTube Music playlist - skipping"
-                        )
-                        tracks_skipped += 1
-                        progress.advance(task)
-                        continue
+    # No live progress bar: it would redraw over the match prompts
+    for i, music_file in enumerate(music_files, 1):
+        logger.info(f"\n[{i}/{len(music_files)}]")
+        matches = search_ytmusic_track(
+            ytm, music_file.title, music_file.artist, music_file.path.name
+        )
+        if matches:
+            track_id = select_ytmusic_match(matches)
+            if track_id:
+                if track_id in existing_tracks:
+                    logger.warning("Track already exists in YouTube Music playlist - skipping")
+                    tracks_skipped += 1
+                    continue
 
-                    success, _ = add_track_to_ytmusic(ytm, track_id, playlist_id, 1)
-                    if success:
-                        tracks_added += 1
-                    else:
-                        tracks_skipped += 1
+                success, _ = add_track_to_ytmusic(ytm, track_id, playlist_id, 1)
+                if success:
+                    tracks_added += 1
                 else:
                     tracks_skipped += 1
             else:
                 tracks_skipped += 1
-            progress.advance(task)
+        else:
+            tracks_skipped += 1
 
     # Print summary
     logger.info("\nSummary:")

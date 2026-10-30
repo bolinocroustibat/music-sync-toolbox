@@ -1,4 +1,5 @@
 import re
+
 import inquirer
 
 from local_files.logger import logger
@@ -22,7 +23,7 @@ def rename_file(music_file: MusicFile, confirm: bool = True) -> tuple[bool, bool
     """Rename file to 'artist - title.ext' format
 
     Args:
-        music_file: MusicFile object (or subclass like DTag) containing path, artist, and title information
+        music_file: MusicFile (or subclass like DTag) with path, artist and title
         confirm: Whether to ask for user confirmation before renaming (default: True)
 
     Returns:
@@ -64,6 +65,7 @@ def rename_file(music_file: MusicFile, confirm: bool = True) -> tuple[bool, bool
         # Rename file
         music_file.path.rename(new_path)
         logger.success(f"Renamed: {music_file.path.name} -> {new_name}")
+        music_file.path = new_path
         return True, False
 
     except Exception as e:

@@ -1,6 +1,7 @@
-from ytmusic.types import YTMusicPlaylistInfo
 from ytmusicapi import YTMusic
+
 from ytmusic.logger import logger
+from ytmusic.types import YTMusicPlaylistInfo
 
 
 def list_user_playlists(ytm: YTMusic) -> list[YTMusicPlaylistInfo]:
@@ -9,17 +10,17 @@ def list_user_playlists(ytm: YTMusic) -> list[YTMusicPlaylistInfo]:
 
     try:
         # Get user playlists
-        results = ytm.get_library_playlists()
+        results = ytm.get_library_playlists(limit=None)
         user_playlists: list[YTMusicPlaylistInfo] = []
         liked_music: YTMusicPlaylistInfo | None = None
 
         # Add Liked Music as first option
         try:
-            liked_tracks = ytm.get_liked_songs()
+            liked = ytm.get_liked_songs(limit=1)
             liked_music = {
                 "name": "Liked Music",
                 "id": "LM",  # Special ID for liked music
-                "track_count": len(liked_tracks),
+                "track_count": liked.get("trackCount") or 0,
             }
             user_playlists.append(liked_music)
         except Exception as e:

@@ -9,7 +9,7 @@ Features include:
 
 ## Prerequisites
 
-- Requires Python >=3.10 and [uv](https://docs.astral.sh/uv/getting-started/installation/).
+- Requires Python >=3.11 and [uv](https://docs.astral.sh/uv/getting-started/installation/).
 - For the Discogs tag updater, it requires a Discogs developper account and free API key: [https://www.discogs.com/settings/developers](https://www.discogs.com/settings/developers)
 - For Spotify integration: requires a Spotify Developer account: [https://developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
 - For YouTube Music integration: it requires either:
@@ -50,6 +50,7 @@ Pass the folder that contains your audio files on the command line with `--path`
 
 ### Discogs Setup
 For the discogs access token, you can create one [here](https://www.discogs.com/settings/developers).
+See [docs/discogs.md](docs/discogs.md) for what the tag updater writes and why.
 
 ### Spotify Setup
 1. Create an application in your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
@@ -159,10 +160,21 @@ Must match the API key configured in slskd.
 
 Optional keys (`url_base`, `verify_ssl`, `request_timeout`) are documented in `config.toml.example`.
 
+## Tests
+
+```sh
+uv run pytest
+```
+
+Tests run offline against in-memory fakes of the Spotify, YouTube Music, Discogs and slskd clients, in a temporary working directory, so they never touch your `config.toml`, tokens or music files.
+Known bugs are covered by `xfail(strict=True)` tests: once a fix lands, the test XPASSes and fails the run, telling you to remove its marker.
+
+Lint and format with `uv run ruff check .` and `uv run ruff format .`. CI runs both, plus the tests on Python 3.11 and 3.13, on every push to `main` and every pull request.
+
 ## TODO
 
 ### Spotify (🟢) Improvements
-- In `spotify/add_tracks.py`: Compare Spotify matches with local files BEFORE asking user for match selection
+- In `scripts/local_to_spotify.py`: Compare Spotify matches with local files BEFORE asking user for match selection
   - This will help identify the best match automatically
   - Only ask user if no exact match is found
 
@@ -184,8 +196,8 @@ Optional keys (`url_base`, `verify_ssl`, `request_timeout`) are documented in `c
                   "year_updated": bool,
                   "cover_updated": bool,
                   "file_renamed": bool,
-                  "new_path": str | None
-              }
+                  "new_path": str | None,
+              },
           }
   ```
 - Benefits:

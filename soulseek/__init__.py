@@ -15,8 +15,8 @@ from soulseek.search_download import (
 
 __all__ = [
     "Config",
-    "SoulseekConfigError",
     "SearchCandidate",
+    "SoulseekConfigError",
     "check_server_ready",
     "enqueue_candidates",
     "filter_mp3_exact_bitrate",

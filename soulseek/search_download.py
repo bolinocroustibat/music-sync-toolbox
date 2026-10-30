@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import time
 from collections import defaultdict
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from slskd_api import SlskdClient
 
@@ -13,7 +14,7 @@ _DEFAULT_SEARCH_TIMEOUT_MS = 45_000
 class SearchCandidate:
     """One downloadable file from search results (username + API file payload)."""
 
-    __slots__ = ("username", "file", "locked")
+    __slots__ = ("file", "locked", "username")
 
     def __init__(self, username: str, file: dict[str, Any], *, locked: bool) -> None:
         self.username = username
@@ -103,8 +104,7 @@ def check_server_ready(client: SlskdClient) -> None:
     state = client.server.state()
     if not state.get("isLoggedIn"):
         raise RuntimeError(
-            "slskd is not logged in to the Soulseek server. "
-            "Check slskd configuration and network."
+            "slskd is not logged in to the Soulseek server. Check slskd configuration and network."
         )
 
 
