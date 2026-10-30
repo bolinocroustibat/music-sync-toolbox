@@ -9,7 +9,7 @@ from spotify import (
     search_track,
     select_match,
 )
-from tests.fakes import FakeSpotify, spotify_item
+from tests.fakes import FakeSpotify, spotify_item, spotify_playlist
 
 
 def search_hit(track_id, name="Song", artist="Artist"):
@@ -107,20 +107,30 @@ class TestAddTrack:
 
 
 class TestListUserPlaylists:
-    def test_sorted_case_insensitively(self):
+    def test_liked_songs_first_then_sorted_case_insensitively(self):
         sp = FakeSpotify(
-            playlists=[
-                {"name": "beta", "id": "b", "tracks": {"total": 2}},
-                {"name": "Alpha", "id": "a", "tracks": {"total": 1}},
-            ]
+            liked=[spotify_item("t1"), spotify_item("t2")],
+            playlists=[spotify_playlist("b", "beta"), spotify_playlist("a", "Alpha")],
         )
-        assert [p["id"] for p in list_user_playlists(sp)] == ["a", "b"]
+
+        playlists = list_user_playlists(sp)
+
+        assert [p["id"] for p in playlists] == ["liked", "a", "b"]
+        assert playlists[0] == {"name": "Liked Songs", "id": "liked", "track_count": 2}
 
     def test_returns_all_pages(self):
+        sp = FakeSpotify(playlists=[spotify_playlist(f"p{i}") for i in range(70)])
+        assert len(list_user_playlists(sp)) == 71  # + Liked Songs
+
+    def test_excludes_playlists_only_followed(self):
         sp = FakeSpotify(
-            playlists=[{"name": f"p{i}", "id": f"p{i}", "tracks": {"total": 0}} for i in range(70)]
+            playlists=[
+                spotify_playlist("mine"),
+                spotify_playlist("followed", owner="someone"),
+                spotify_playlist("shared", owner="someone", collaborative=True),
+            ]
         )
-        assert len(list_user_playlists(sp)) == 70
+        assert [p["id"] for p in list_user_playlists(sp)] == ["liked", "mine", "shared"]
 
 
 class TestDuplicates:
