@@ -28,6 +28,9 @@ def list_user_playlists(ytm: YTMusic) -> list[YTMusicPlaylistInfo]:
 
         # Add regular playlists
         for playlist in results:
+            # The library also lists Liked Music, without its track count
+            if playlist["playlistId"] == "LM":
+                continue
             playlist_info: YTMusicPlaylistInfo = {
                 "name": playlist["title"],
                 "id": playlist["playlistId"],
