@@ -1,3 +1,5 @@
+import importlib
+
 import pytest
 
 from tests.fakes import FakeYTMusic, yt_track
@@ -103,3 +105,58 @@ class TestAddTrack:
         ytm = FakeYTMusic()
         add_track_to_ytmusic(ytm, "v1", "LM", 5)
         assert ytm.rated == [("v1", "LIKE")] and ytm.added == []
+
+
+class TestSetupYTMusic:
+    @staticmethod
+    def _setup(monkeypatch, tmp_path, method, error):
+        module = importlib.import_module("ytmusic.setup_ytmusic")
+
+        class Client:
+            def __init__(self, *_, **__):
+                pass
+
+            def get_library_playlists(self, limit=25):
+                raise error
+
+        (tmp_path / "oauth.json").write_text('{"access_token": "x"}')
+        (tmp_path / "browser.json").write_text("{}")
+        monkeypatch.setattr(module, "OAUTH_PATH", tmp_path / "oauth.json")
+        monkeypatch.setattr(module, "BROWSER_PATH", tmp_path / "browser.json")
+        monkeypatch.setattr(module, "choose_auth_method", lambda: method)
+        monkeypatch.setattr(module, "YTMusic", Client)
+        return module
+
+    @pytest.mark.parametrize(
+        "method,error",
+        [
+            ("oauth", KeyError("access_token")),
+            ("oauth", Exception("Server returned HTTP 400: Bad Request.")),
+            ("browser", Exception("Server returned HTTP 401: Unauthorized.")),
+        ],
+    )
+    def test_auth_failures_exit_cleanly(self, monkeypatch, tmp_path, method, error):
+        module = self._setup(monkeypatch, tmp_path, method, error)
+        with pytest.raises(SystemExit):
+            module.setup_ytmusic()
+
+    def test_oauth_rejected_falls_back_to_existing_browser_cookies(self, monkeypatch, tmp_path):
+        module = importlib.import_module("ytmusic.setup_ytmusic")
+
+        class Client:
+            def __init__(self, auth, **_):
+                self.auth = auth
+
+            def get_library_playlists(self, limit=25):
+                if self.auth.endswith("oauth.json"):
+                    raise Exception("Server returned HTTP 400: Bad Request.")
+                return []
+
+        (tmp_path / "oauth.json").write_text('{"access_token": "x"}')
+        (tmp_path / "browser.json").write_text("{}")
+        monkeypatch.setattr(module, "OAUTH_PATH", tmp_path / "oauth.json")
+        monkeypatch.setattr(module, "BROWSER_PATH", tmp_path / "browser.json")
+        monkeypatch.setattr(module, "choose_auth_method", lambda: "oauth")
+        monkeypatch.setattr(module, "YTMusic", Client)
+
+        assert module.setup_ytmusic().auth.endswith("browser.json")

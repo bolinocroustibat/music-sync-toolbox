@@ -23,13 +23,14 @@ def setup_ytmusic() -> YTMusic:
         YTMusic: Authenticated YTMusic client instance.
 
     Raises:
-        Exception: If authentication fails or configuration is invalid.
+        SystemExit: If authentication fails; the reason and how to fix it are logged.
 
     Notes:
-        - Prompts user to choose between OAuth and browser authentication.
+        - Prompts user to choose between browser cookies and OAuth authentication.
         - OAuth requires client_id and client_secret in config.toml.
         - Browser authentication requires browser.json file with cookies.
-        - OAuth is recommended for better reliability and security.
+        - YouTube Music currently rejects most OAuth requests (HTTP 400), so
+          browser cookies are the recommended method.
     """
     auth_method = choose_auth_method()
 
@@ -41,57 +42,75 @@ def setup_ytmusic() -> YTMusic:
         )
         try:
             ytm = YTMusic(str(OAUTH_PATH), oauth_credentials=oauth_credentials)
-            # Test authentication by trying to get user info
-            try:
-                ytm.get_library_playlists(limit=1)
-                logger.success("YouTube Music authentication successful")
-            except KeyError as auth_error:
-                error_msg = str(auth_error)
-                if "'access_token'" in error_msg or "access_token" in error_msg:
-                    logger.error(
-                        "OAuth token refresh failed: The refresh token is invalid or expired."
-                    )
-                    logger.error("This usually happens when:")
-                    logger.error("  - The OAuth token is too old and needs regeneration")
-                    logger.error(
-                        "  - The client_id/client_secret in config.toml don't match the token"
-                    )
-                    logger.error("  - The OAuth app permissions have changed")
-                    logger.info("\nSolution: Regenerate your OAuth token by running:")
-                    logger.info("  uv run ytmusicapi oauth")
-                    logger.info(
-                        "\nMake sure your client_id and client_secret in config.toml are correct."
-                    )
-                else:
-                    logger.error(f"Authentication test failed: Missing key {auth_error}")
-                    logger.info("Try regenerating your OAuth token: uv run ytmusicapi oauth")
-                raise Exception(
-                    f"Failed to authenticate with YouTube Music: {auth_error}"
-                ) from auth_error
-            except Exception as auth_error:
-                error_msg = str(auth_error)
-                if "'access_token'" in error_msg or "access_token" in error_msg:
-                    logger.error(
-                        "OAuth token refresh failed: The refresh token is invalid or expired."
-                    )
-                    logger.info("Try regenerating your OAuth token: uv run ytmusicapi oauth")
-                else:
-                    logger.error(f"Authentication test failed: {auth_error}")
-                    logger.error("The OAuth token may be expired or invalid.")
-                    logger.info("Try regenerating your OAuth token: uv run ytmusicapi oauth")
-                raise Exception(
-                    f"Failed to authenticate with YouTube Music: {auth_error}"
-                ) from auth_error
+            ytm.get_library_playlists(limit=1)
+            logger.success("YouTube Music authentication successful")
             return ytm
         except Exception as e:
-            # Only log if it's not already been logged above (i.e., not an auth error)
-            if "Failed to authenticate" not in str(e):
-                logger.error(f"Error initializing YouTube Music client: {e}")
-                logger.info("Try regenerating your OAuth token: uv run ytmusicapi oauth")
-            raise
-    else:  # browser method
-        check_ytmusic_setup_browser()
-        return YTMusic(str(BROWSER_PATH))
+            _explain_oauth_error(e)
+            if not BROWSER_PATH.is_file():
+                sys.exit(1)
+            logger.warning(f"\nFalling back to browser cookies from {BROWSER_PATH}...")
+
+    check_ytmusic_setup_browser()
+    try:
+        ytm = YTMusic(str(BROWSER_PATH))
+        ytm.get_library_playlists(limit=1)
+    except Exception as e:
+        _explain_browser_error(e)
+        sys.exit(1)
+
+    logger.success("YouTube Music authentication successful")
+    return ytm
+
+
+def _explain_oauth_error(e: Exception) -> None:
+    """Log why OAuth authentication failed and how the user can fix it."""
+    if isinstance(e, KeyError) and "access_token" in str(e):
+        logger.error("OAuth token refresh failed: the refresh token is invalid or expired.")
+        logger.info("\nRegenerate it in your terminal (it needs your keyboard and a browser):")
+        logger.info(f"  uv run ytmusicapi oauth --file {OAUTH_PATH}")
+        logger.info("Use the same client_id and client_secret as in config.toml.")
+        logger.info(
+            "If your Google Cloud OAuth app is in 'Testing' mode, its tokens expire after "
+            "7 days: publish it ('In production') on the OAuth consent screen."
+        )
+    elif "HTTP 400" in str(e):
+        logger.error(f"YouTube Music rejected the OAuth request: {e}")
+        logger.info(
+            "\nThis is a known YouTube Music limitation with OAuth, regenerating the token "
+            "will not help. Use 'Browser Cookies' authentication instead."
+        )
+        if not BROWSER_PATH.is_file():
+            _log_browser_setup_instructions()
+    else:
+        logger.error(f"YouTube Music OAuth authentication failed: {e}")
+        logger.info(
+            f"\nTry regenerating your OAuth token: uv run ytmusicapi oauth --file {OAUTH_PATH}"
+        )
+        logger.info("Or use 'Browser Cookies' authentication instead.")
+
+
+def _explain_browser_error(e: Exception) -> None:
+    """Log why browser cookie authentication failed and how the user can fix it."""
+    logger.error(f"YouTube Music browser authentication failed: {e}")
+    logger.info(
+        f"\nThe cookies in {BROWSER_PATH} are probably expired (e.g. you logged out of Google "
+        "in that browser). Create the file again:"
+    )
+    _log_browser_setup_instructions()
+
+
+def _log_browser_setup_instructions() -> None:
+    logger.info(
+        "1. Open https://music.youtube.com logged in with the account holding your playlists"
+    )
+    logger.info(
+        "2. Open the developer tools > Network tab, filter on 'browse', click a POST request"
+    )
+    logger.info("3. Copy its request headers (Chrome: Headers > Request Headers > Raw)")
+    logger.info(f"4. Run: uv run ytmusicapi browser --file {BROWSER_PATH}")
+    logger.info("   paste the headers, press Enter then Ctrl-D")
+    logger.info("Details: https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html")
 
 
 def choose_auth_method() -> str:
@@ -105,7 +124,7 @@ def choose_auth_method() -> str:
         KeyboardInterrupt: If user cancels the selection process.
 
     Notes:
-        - OAuth is recommended for better reliability and security.
+        - Browser cookies are recommended: YouTube Music currently rejects most OAuth requests.
         - Browser authentication uses saved cookies from a browser session.
     """
     questions = [
@@ -113,8 +132,8 @@ def choose_auth_method() -> str:
             "auth_method",
             message="Choose YouTube Music authentication method",
             choices=[
-                ("OAuth (recommended)", "oauth"),
-                ("Browser Cookies", "browser"),
+                ("Browser Cookies (recommended)", "browser"),
+                ("OAuth", "oauth"),
             ],
             carousel=True,
         )
@@ -209,8 +228,6 @@ def check_ytmusic_setup_browser() -> None:
     if not BROWSER_PATH.is_file():
         logger.error("browser.json file not found.")
         logger.info("\nTo set up YouTube Music browser authentication:")
-        logger.info("1. Follow the instructions at:")
-        logger.info("   https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html")
-        logger.info(f"2. Create a file {BROWSER_PATH} with your browser credentials")
+        _log_browser_setup_instructions()
         sys.exit(1)
     logger.success(f"Found browser.json at: {BROWSER_PATH}")

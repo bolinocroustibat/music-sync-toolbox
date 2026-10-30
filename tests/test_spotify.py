@@ -1,3 +1,5 @@
+import importlib
+
 import pytest
 
 from scripts.manage_spotify_duplicates import find_duplicates, remove_duplicates
@@ -200,3 +202,46 @@ class TestDuplicates:
     def test_local_files_are_not_duplicates(self):
         items = [spotify_item(None, name="Local 1"), spotify_item(None, name="Local 2")]
         assert find_duplicates(FakeSpotify(playlist=items), "pl") == {}
+
+
+class TestSetupSpotify:
+    @staticmethod
+    def _client(monkeypatch, *outcomes):
+        """Patch spotipy.Spotify so successive current_user() calls raise or return `outcomes`."""
+        module = importlib.import_module("spotify.setup_spotify")
+
+        calls = iter(outcomes)
+
+        class Client:
+            def __init__(self, **_):
+                pass
+
+            def current_user(self):
+                outcome = next(calls)
+                if isinstance(outcome, Exception):
+                    raise outcome
+                return outcome
+
+        monkeypatch.setattr(module.spotipy, "Spotify", Client)
+        return module
+
+    def test_expired_cached_token_is_discarded_and_login_retried(self, monkeypatch, tmp_path):
+        from spotipy.oauth2 import SpotifyOauthError
+
+        expired = SpotifyOauthError(
+            "expired", error="invalid_grant", error_description="Refresh token expired"
+        )
+        module = self._client(monkeypatch, expired, {"display_name": "me"})
+        cache = tmp_path / ".spotify_token_cache"
+        cache.write_text("{}")
+        monkeypatch.setattr(module, "TOKEN_CACHE_PATH", cache)
+
+        assert module.setup_spotify() is not None
+        assert not cache.exists()
+
+    def test_rejected_credentials_exit_cleanly(self, monkeypatch):
+        from spotipy.oauth2 import SpotifyOauthError
+
+        module = self._client(monkeypatch, SpotifyOauthError("bad", error="invalid_client"))
+        with pytest.raises(SystemExit):
+            module.setup_spotify()

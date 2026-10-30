@@ -61,6 +61,14 @@ def setup_discogs() -> tuple[DiscogsConfig, dc.Client]:
 
 
 def main() -> None:
+    try:
+        run()
+    except KeyboardInterrupt:
+        discogs_logger.warning("\nCancelled.")
+        sys.exit(130)
+
+
+def run() -> None:
     args = parse_args()
 
     check_config()

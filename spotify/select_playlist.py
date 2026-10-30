@@ -1,3 +1,5 @@
+import sys
+
 import inquirer
 import spotipy
 
@@ -20,7 +22,7 @@ def select_playlist(sp: spotipy.Spotify, playlist_id: str | None = None) -> str:
         str: The selected playlist ID
 
     Raises:
-        Exception: If no playlists are found for the user
+        SystemExit: If no playlists are found for the user
         KeyboardInterrupt: If user cancels the selection process
         Exception: If the specified playlist_id is invalid or inaccessible
 
@@ -54,7 +56,11 @@ def select_playlist(sp: spotipy.Spotify, playlist_id: str | None = None) -> str:
     playlists = list_user_playlists(sp)
 
     if not playlists:
-        raise Exception("No playlists found for user")
+        logger.error("No Spotify playlists found for this account.")
+        logger.info(
+            "Create a playlist on Spotify, or check that you logged in with the right account."
+        )
+        sys.exit(1)
 
     # Create choices list for inquirer with formatted display
     choices = [

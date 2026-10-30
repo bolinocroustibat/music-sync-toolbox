@@ -13,8 +13,8 @@ Features include:
 - For the Discogs tag updater, it requires a Discogs developper account and free API key: [https://www.discogs.com/settings/developers](https://www.discogs.com/settings/developers)
 - For Spotify integration: requires a Spotify Developer account: [https://developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
 - For YouTube Music integration: it requires either:
-  - A YouTube Music Developer account: [https://console.cloud.google.com/apis/api/youtube.googleapis.com/credentials](https://console.cloud.google.com/apis/api/youtube.googleapis.com/credentials)
-  - Or a YouTube Music session cookie file (see [https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html)), but this might not be working as expected.
+  - A YouTube Music session cookie file (recommended, see [https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html))
+  - Or a YouTube Music Developer account: [https://console.cloud.google.com/apis/api/youtube.googleapis.com/credentials](https://console.cloud.google.com/apis/api/youtube.googleapis.com/credentials), but YouTube Music currently rejects most OAuth requests (HTTP 400).
 - For Soulseek downloads (menu “via slskd”): a **running [slskd](https://github.com/slskd/slskd)** daemon. It is not a Python package in this repo; install slskd separately (see [Soulseek (slskd)](#soulseek-slskd) below).
 
 ## Install
@@ -61,16 +61,18 @@ See [docs/discogs.md](docs/discogs.md) for what the tag updater writes and why.
 ### YouTube Music Setup
 You can choose between two authentication methods:
 
-1. OAuth (Recommended):
+1. Browser Cookies (recommended):
+   - Open [YouTube Music](https://music.youtube.com) logged in with the account holding your playlists (switch to your secondary channel first if your playlists live on a brand account)
+   - In the developer tools, Network tab, copy the request headers of a POST `browse` request (Chrome: Request Headers > Raw)
+   - Run `uv run ytmusicapi browser --file ytmusic/browser.json`, paste the headers, then press Enter and Ctrl-D
+   - See [ytmusicapi browser setup](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html) for details
+
+2. OAuth (currently rejected by YouTube Music with HTTP 400 for most accounts):
    - Create a project in [Google Cloud Console](https://console.cloud.google.com)
    - Enable the YouTube Data API v3
-   - Create OAuth 2.0 credentials (TVs and Limited Input devices type)
+   - Create OAuth 2.0 credentials (TVs and Limited Input devices type), and publish the app ("In production") so tokens don't expire after 7 days
    - Add your credentials to `config.toml`
-   - Run `uv run ytmusicapi oauth` to create `oauth.json`
-
-2. Browser Cookies:
-   - Follow the instructions at [ytmusicapi browser setup](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html)
-   - Create a `browser.json` file with your browser credentials
+   - Run `uv run ytmusicapi oauth --file ytmusic/oauth.json` to create `oauth.json`
 
 ### Soulseek (slskd)
 
