@@ -103,8 +103,17 @@ class TestDTagInit:
         path = make_mp3(artist="A & B", title="Song (Remix)", genre="Rock", date="2018")
         tag = DTag(path, path.name, make_config(), ds=None)
 
-        assert (tag.artist, tag.title) == ("A", "Song")
+        assert (tag.search_artist, tag.search_title) == ("A", "Song")
+        assert (tag.artist, tag.title) == ("A & B", "Song (Remix)")
         assert (tag.local_genres, tag.local_year) == ("Rock", "2018")
+
+    def test_searches_with_cleaned_tags(self, make_mp3, no_sleep):
+        path = make_mp3(artist="A & B", title="Hello, Goodbye (Remix)")
+        ds = FakeDiscogs(FakeResults([master()]))
+
+        DTag(path, path.name, make_config(), ds).search()
+
+        assert ds.calls == [{"type": "master", "artist": "A", "track": "Hello"}]
 
 
 class TestDTagSearch:
@@ -275,6 +284,15 @@ class TestUpdateTagsFromDiscogs:
         update_tags_from_discogs(tmp_path, make_config(embed_cover=False), ds)
 
         assert EasyID3(path)["genre"] == ["Electronic, House"]
+
+    def test_rename_option_keeps_full_title(self, tmp_path, make_mp3, monkeypatch, no_sleep):
+        monkeypatch.setattr("builtins.input", lambda *_: "")
+        make_mp3("old.mp3", artist="A & B", title="Hello, Goodbye (Remix)")
+        ds = FakeDiscogs(FakeResults([master()]))
+
+        update_tags_from_discogs(tmp_path, make_config(embed_cover=False, rename_file=True), ds)
+
+        assert (tmp_path / "A & B - Hello, Goodbye (Remix).mp3").is_file()
 
     def test_scans_uppercase_extensions_and_skips_directories(
         self, tmp_path, make_mp3, monkeypatch, no_sleep

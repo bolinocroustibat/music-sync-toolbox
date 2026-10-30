@@ -41,9 +41,10 @@ class DTag(MusicFile):
         # Get additional tags (genres, year, cover info)
         self._get_additional_tags()
 
-        # Clean title and artist tags
-        self.artist: str = clean(string=self.artist)
-        self.title: str = clean(string=self.title)
+        # Cleaned title and artist, only for searching: the original tags
+        # are kept for renaming, so "(Remix)" etc. stay in the file name
+        self.search_artist: str = clean(string=self.artist)
+        self.search_title: str = clean(string=self.title)
 
     def __repr__(self) -> str:
         return f"File: {self.path}"
@@ -228,19 +229,21 @@ class DTag(MusicFile):
     def search(self, retry: int = 3) -> bool:
         """Search Discogs for this track; return True if a match was found."""
         # check if track has required tags for searching
-        if self.artist == "" or self.title == "":
+        if self.search_artist == "" or self.search_title == "":
             logger.error(
                 "Track does not have the required tags for searching on Discogs."
             )
             return False
 
-        logger.info(f'Searching for "{self.title} {self.artist}" on Discogs...')
+        logger.info(f'Searching for "{self.search_title} {self.search_artist}" on Discogs...')
         results = []
         for attempt in range(1, retry + 1):
             # discogs api limit: 60/1minute
             time.sleep(0.5)
             try:
-                res = self.ds.search(type="master", artist=self.artist, track=self.title)
+                res = self.ds.search(
+                    type="master", artist=self.search_artist, track=self.search_title
+                )
                 # Only the first page: iterating res would fetch every page
                 results = res.page(1) if res.count > 0 else []
                 break
@@ -257,7 +260,7 @@ class DTag(MusicFile):
             logger.warning("Not Found on Discogs.")
             return False
 
-        local_string = f"{self.title} {self.artist}"
+        local_string = f"{self.search_title} {self.search_artist}"
         discogs_list = []
         for i, track in enumerate(results):
             d_artist = ""
