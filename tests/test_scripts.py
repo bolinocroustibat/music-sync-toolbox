@@ -7,9 +7,8 @@ from types import SimpleNamespace
 import pytest
 
 import main
-import scripts.local_to_spotify as local_to_spotify
-import scripts.local_to_ytmusic as local_to_ytmusic
 from logger import FileLogger
+from scripts import local_to_spotify, local_to_ytmusic
 from scripts.spotify_to_ytmusic import process_tracks as spotify_to_ytmusic
 from scripts.ytmusic_to_spotify import process_tracks as ytmusic_to_spotify
 from tests.conftest import REPO_ROOT
@@ -162,6 +161,7 @@ def test_menu_loads_without_spotify_or_ytmusic_config(tmp_path):
         env={**os.environ, "PYTHONPATH": str(REPO_ROOT)},
         capture_output=True,
         text=True,
+        check=False,
     )
 
     assert result.returncode == 0, result.stderr

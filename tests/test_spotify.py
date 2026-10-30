@@ -97,7 +97,7 @@ class TestAddTrack:
         def flaky(playlist_id, items):
             calls.append(items)
             if len(calls) == 1:
-                raise Exception("Rate/request limit exceeded")
+                raise RuntimeError("Rate/request limit exceeded")
 
         sp.playlist_add_items = flaky
         assert add_track(sp, "t1", "pl", 5) == (True, 10)

@@ -24,8 +24,7 @@ class SearchCandidate:
 
 def _normalize_extension(ext: str) -> str:
     e = (ext or "").strip().lower()
-    if e.startswith("."):
-        e = e[1:]
+    e = e.removeprefix(".")
     return e
 
 

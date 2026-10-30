@@ -11,14 +11,14 @@ from scripts.update_tags_from_discogs import update_tags_from_discogs
 
 
 def make_config(**overrides):
-    defaults = dict(
-        token="t",
-        overwrite_year=False,
-        overwrite_genre=False,
-        embed_cover=True,
-        overwrite_cover=False,
-        rename_file=False,
-    )
+    defaults = {
+        "token": "t",
+        "overwrite_year": False,
+        "overwrite_genre": False,
+        "embed_cover": True,
+        "overwrite_cover": False,
+        "rename_file": False,
+    }
     return SimpleNamespace(**{**defaults, **overrides})
 
 

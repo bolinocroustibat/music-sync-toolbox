@@ -27,7 +27,7 @@ def create_playlist(ytm: YTMusic, name: str, description: str = "") -> str:
         result = ytm.create_playlist(name, description)
         playlist_id = result if isinstance(result, str) else result.get("playlistId")
         if not playlist_id:
-            raise Exception("Failed to get playlist ID from response")
+            raise RuntimeError("Failed to get playlist ID from response")
         logger.success(f'Created playlist "{name}" with ID: {playlist_id}')
         return playlist_id
     except Exception as e:

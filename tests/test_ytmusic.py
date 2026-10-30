@@ -160,7 +160,7 @@ class TestSetupYTMusic:
 
             def get_library_playlists(self, limit=25):
                 if self.auth.endswith("oauth.json"):
-                    raise Exception("Server returned HTTP 400: Bad Request.")
+                    raise RuntimeError("Server returned HTTP 400: Bad Request.")
                 return []
 
         (tmp_path / "oauth.json").write_text('{"access_token": "x"}')

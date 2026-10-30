@@ -81,7 +81,7 @@ class DTag(MusicFile):
                     self.local_year = audio["date"][0]
                 if audio.pictures:
                     self.cover_embedded = True
-            except (FLACNoHeaderError, Exception):
+            except (FLACNoHeaderError, MutagenError, KeyError):
                 pass
 
         elif self.suffix.lower() == ".mp3":
