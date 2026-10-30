@@ -187,7 +187,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    if not Path("config.ini").is_file():
+    if not Path("config.toml").is_file():
         logger.error("Configuration file not found")
         sys.exit(1)
 
