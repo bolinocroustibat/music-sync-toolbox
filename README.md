@@ -9,7 +9,7 @@ Features include:
 
 ## Prerequisites
 
-- Requires Python >=3.10 and [uv](https://docs.astral.sh/uv/getting-started/installation/).
+- Requires Python >=3.11 and [uv](https://docs.astral.sh/uv/getting-started/installation/).
 - For the Discogs tag updater, it requires a Discogs developper account and free API key: [https://www.discogs.com/settings/developers](https://www.discogs.com/settings/developers)
 - For Spotify integration: requires a Spotify Developer account: [https://developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
 - For YouTube Music integration: it requires either:

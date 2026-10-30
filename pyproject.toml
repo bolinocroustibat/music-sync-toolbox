@@ -19,7 +19,7 @@ dependencies = [
     "spotipy>=2.23.0",
     "ytmusicapi>=0.23.0",
 ]
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.11,<4.0"
 license = { text = "MIT" }
 
 [project.scripts]
