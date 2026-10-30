@@ -60,11 +60,11 @@ def update_tags_from_discogs(directory: Path, config=None, ds=None) -> None:
     found: int = 0
     renamed: int = 0
     total: int = 0
-    files = {
+    files = [
         DTag(path=p, original_filename=p.name, config=config, ds=ds)
-        for p in directory.rglob("*")
-        if p.suffix in AUDIO_FILES_EXTENSIONS
-    }
+        for p in sorted(directory.rglob("*"))
+        if p.is_file() and p.suffix.lower() in AUDIO_FILES_EXTENSIONS
+    ]
 
     logger.info("\nProcessing files...")
     with Progress(
@@ -83,7 +83,7 @@ def update_tags_from_discogs(directory: Path, config=None, ds=None) -> None:
             )
 
             # Search on Discogs and update
-            if tag_file.search() is None:
+            if tag_file.search():
                 tag_file.save()
                 found += 1
             else:
