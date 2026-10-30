@@ -5,7 +5,7 @@ from pathlib import Path
 
 import niquests as requests
 from discogs_client.exceptions import HTTPError
-from fuzzywuzzy import process
+from rapidfuzz import fuzz, process, utils
 from mutagen.easyid3 import EasyID3
 from mutagen.flac import FLAC, FLACNoHeaderError, Picture
 from mutagen.id3 import ID3
@@ -259,21 +259,20 @@ class DTag(MusicFile):
             return False
 
         local_string = f"{self.search_title} {self.search_artist}"
-        discogs_list = []
-        for i, track in enumerate(results):
+        discogs_strings = []
+        for track in results:
             d_artist = ""
             if track.data.get("artist"):
                 d_artist = track.data["artist"][0]["name"]
-            d_title = track.title
 
             # create string for comparison
-            discogs_string = f"{d_title} {d_artist}"
-
-            # append to list
-            discogs_list.append({"index": i, "str": discogs_string})
+            discogs_strings.append(f"{track.title} {d_artist}")
 
         # get best match from list
-        best = results[process.extractBests(local_string, discogs_list, limit=1)[0][0]["index"]]
+        _, _, best_index = process.extractOne(
+            local_string, discogs_strings, scorer=fuzz.WRatio, processor=utils.default_process
+        )
+        best = results[best_index]
 
         # check if genre is missing
         if best.genres:

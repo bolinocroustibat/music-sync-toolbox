@@ -158,6 +158,20 @@ class TestDTagSearch:
 
         assert tag.year == "1997"
 
+    def test_best_match_is_not_just_the_first_result(self, make_mp3, no_sleep):
+        path = make_mp3(artist="Daft Punk", title="One More Time")
+        results = FakeResults(
+            [
+                master(title="Daft Punk - Around The World", year=1997),
+                master(title="Daft Punk - One More Time", year=2000),
+            ]
+        )
+        tag = DTag(path, path.name, make_config(), FakeDiscogs(results))
+
+        tag.search()
+
+        assert tag.year == "2000"
+
     def test_not_found_returns_false(self, make_mp3, no_sleep):
         path = make_mp3(artist="Artist", title="Title")
         tag = DTag(path, path.name, make_config(), FakeDiscogs(FakeResults([])))

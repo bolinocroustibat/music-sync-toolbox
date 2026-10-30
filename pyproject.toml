@@ -9,11 +9,10 @@ authors = [
 dependencies = [
     "argcomplete>=3.0.0",
     "discogs-client==2.3.0",
-    "fuzzywuzzy<1.0.0,>=0.18.0",
     "inquirer>=2.10.1",
     "mutagen<2.0.0,>=1.45.1",
     "niquests>=3.18.4",
-    "python-Levenshtein>=0.23.0",
+    "rapidfuzz>=3.13.0",
     "requests>=2.32.3",
     "rich>=13.7.0",
     "slskd-api>=0.2.3",
