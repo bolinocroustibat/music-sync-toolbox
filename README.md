@@ -159,6 +159,15 @@ Must match the API key configured in slskd.
 
 Optional keys (`url_base`, `verify_ssl`, `request_timeout`) are documented in `config.toml.example`.
 
+## Tests
+
+```sh
+uv run pytest
+```
+
+Tests run offline against in-memory fakes of the Spotify, YouTube Music, Discogs and slskd clients, in a temporary working directory, so they never touch your `config.toml`, tokens or music files.
+Known bugs are covered by `xfail(strict=True)` tests: once a fix lands, the test XPASSes and fails the run, telling you to remove its marker.
+
 ## TODO
 
 ### Spotify (🟢) Improvements
