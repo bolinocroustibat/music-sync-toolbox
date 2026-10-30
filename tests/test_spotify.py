@@ -245,3 +245,9 @@ class TestSetupSpotify:
         module = self._client(monkeypatch, SpotifyOauthError("bad", error="invalid_client"))
         with pytest.raises(SystemExit):
             module.setup_spotify()
+
+    def test_localhost_redirect_uri_exits_before_opening_browser(self):
+        module = importlib.import_module("spotify.setup_spotify")
+        with pytest.raises(SystemExit):
+            module.check_redirect_uri("http://localhost:8888/callback")
+        module.check_redirect_uri("http://127.0.0.1:8888/callback")
