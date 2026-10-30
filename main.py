@@ -31,6 +31,20 @@ ACTIONS_NEEDING_MEDIA_PATH = frozenset(
     }
 )
 
+# (icon, category, label, action). Icons are all double-width emoji without variation
+# selectors (unlike e.g. 🏷️ or ➡️), so the columns line up in every terminal.
+MENU = [
+    ("🔖", "Local files", "Update ID3 tags from Discogs", "discogs_update"),
+    ("📝", "Local files", "Rename files from their ID3 tags", "discogs_rename"),
+    ("✨", "Local files", "Update ID3 tags from Discogs, then rename files", "discogs_both"),
+    ("🟢", "Spotify", "Add local files to a playlist", "spotify_add"),
+    ("🟢", "Spotify", "Import a YouTube Music playlist", "spotify_import"),
+    ("🟢", "Spotify", "Find and remove duplicate tracks in a playlist", "spotify_duplicates"),
+    ("🔴", "YouTube Music", "Add local files to a playlist", "ytmusic_add"),
+    ("🔴", "YouTube Music", "Import a Spotify playlist", "ytmusic_import"),
+    ("🐝", "Soulseek", "Search and download mp3/flac (via slskd)", "soulseek_download"),
+]
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -73,47 +87,14 @@ def run() -> None:
 
     check_config()
 
+    category_width = max(len(category) for _, category, _, _ in MENU)
     questions = [
         inquirer.List(
             "action",
             message="What would you like to do?",
             choices=[
-                (
-                    "💿  ➡️  🏷️  Update ID3 tags of the local files using Discogs",
-                    "discogs_update",
-                ),
-                (
-                    "🏷️  ➡️  📁  Rename files using their ID3 tags",
-                    "discogs_rename",
-                ),
-                (
-                    "💿  ➡️  🏷️  ➡️  📁  Update ID3 tags and rename files",
-                    "discogs_both",
-                ),
-                (
-                    "🟢  ➕  Add local files to Spotify playlist",
-                    "spotify_add",
-                ),
-                (
-                    "🔴  ➡️  🟢  Import tracks from YouTube Music playlist to Spotify Playlist",
-                    "spotify_import",
-                ),
-                (
-                    "🟢  🧹  Find and remove duplicate tracks in Spotify playlist",
-                    "spotify_duplicates",
-                ),
-                (
-                    "🔴  ➕  Add local files to YouTube Music playlist",
-                    "ytmusic_add",
-                ),
-                (
-                    "🟢  ➡️  🔴  Import tracks from Spotify playlist to YouTube Music Playlist",
-                    "ytmusic_import",
-                ),
-                (
-                    "🐝  ⬇️  Search Soulseek and download mp3/flac (via slskd)",
-                    "soulseek_download",
-                ),
+                (f"{icon}  {category.ljust(category_width)}   {label}", action)
+                for icon, category, label, action in MENU
             ],
         ),
     ]
